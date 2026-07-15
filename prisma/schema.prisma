@@ -17,13 +17,32 @@ enum Role {
   SUPER_ADMIN
 }
 
+enum CafeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum TableZone {
+  INDOOR
+  OUTDOOR
+  ROOFTOP
+  PRIVATE
+}
+
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String      @id @default(uuid())
+  email        String      @unique
   name         String
   role         Role
-  passwordHash String   @map("password_hash")
-  createdAt    DateTime @default(now()) @map("created_at")
+  passwordHash String      @map("password_hash")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  // Back-relations
+  cafesOwned   Cafe[]      @relation("CafeOwner")
+  staffRecord  CafeStaff[] @relation("StaffUser")
+  staffAdded   CafeStaff[] @relation("StaffAdder")
 
   @@map("users")
 }
@@ -34,4 +53,60 @@ model TokenBlacklist {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("token_blacklist")
+}
+
+model Cafe {
+  id             String     @id @default(uuid())
+  ownerId        String     @map("owner_id")
+  name           String
+  description    String
+  location       String
+  city           String
+  area           String
+  latitude       Float
+  longitude      Float
+  coverPhotoUrl  String     @map("cover_photo_url")
+  photos         Json       // JSON array of Cloudinary URLs
+  operatingHours Json       @map("operating_hours") // JSON structure of operating hours per day
+  status         CafeStatus @default(PENDING)
+  rejectionReason String?    @map("rejection_reason")
+  averageRating  Float      @default(0.0) @map("average_rating")
+  totalReviews   Int        @default(0) @map("total_reviews")
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  owner          User        @relation("CafeOwner", fields: [ownerId], references: [id])
+  tables         Table[]
+  staff          CafeStaff[]
+
+  @@map("cafes")
+}
+
+model Table {
+  id          String    @id @default(uuid())
+  cafeId      String    @map("cafe_id")
+  name        String
+  capacity    Int
+  zone        TableZone @default(INDOOR)
+  description String
+  isActive    Boolean   @default(true) @map("is_active")
+
+  // Relations
+  cafe        Cafe      @relation(fields: [cafeId], references: [id])
+
+  @@map("tables")
+}
+
+model CafeStaff {
+  id        String   @id @default(uuid())
+  cafeId    String   @map("cafe_id")
+  userId    String   @map("user_id")
+  addedById String   @map("added_by")
+
+  // Relations
+  cafe      Cafe     @relation(fields: [cafeId], references: [id])
+  user      User     @relation("StaffUser", fields: [userId], references: [id])
+  addedBy   User     @relation("StaffAdder", fields: [addedById], references: [id])
+
+  @@map("cafe_staff")
 }

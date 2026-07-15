@@ -1,51 +1,34 @@
-# Dependencies
+# Dependency directories
 node_modules/
+jspm_packages/
 
-# Environment & secrets — never commit these
+# Build outputs
+dist/
+build/
+
+# Local env files
 .env
 .env.local
-.env.*.local
-.env.development
-.env.production
-.env.test
-
-# Keep .env.example so others know which vars to set
-!.env.example
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
-logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
+logs/
+*.log
 
-# OS
+# Editor configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS metadata
 .DS_Store
 Thumbs.db
-Desktop.ini
-
-# IDE / editor
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Build / output (client + server when added)
-dist/
-build/
-coverage/
-.cache/
-.vite/
-*.tsbuildinfo
-
-# Prisma
-prisma/*.db
-prisma/*.db-journal
-
-# Misc
-*.tgz
-.temp/
-.tmp/
-.turbo/

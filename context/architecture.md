@@ -12,7 +12,7 @@
 | **ORM** | Prisma | Type-safe query builder and migration runner on top of PostgreSQL |
 | **Image Storage** | Cloudinary | Stores and serves café photos (cover image + gallery); returns CDN URLs saved in the DB |
 | **Authentication** | JWT + bcrypt | bcrypt hashes passwords at rest; JWTs carry identity and role on each request |
-| **Token Blacklist** | In-memory Set (or Redis in Phase 2) | Tracks invalidated JWTs so logout is enforced server-side |
+| **Token Blacklist** | PostgreSQL `token_blacklist` table | Persists invalidated JWT IDs so logout is enforced server-side |
 | **Real-time** | Socket.io | Pushes live table availability events to all clients watching a café page |
 | **Background Jobs** | node-cron | Runs every 30 seconds to expire stale booking holds |
 | **Frontend Hosting** | Vercel | Serves the React build; handles CDN, routing, and HTTPS automatically |
@@ -107,7 +107,6 @@ Only image binary data is stored in Cloudinary. The database never stores raw im
 
 | What | Where | Notes |
 |---|---|---|
-| JWT blacklist | `Set` in server memory (Phase 1) | Acceptable for MVP on a single Railway instance. Replace with Redis if horizontal scaling is needed in Phase 2. |
 | Socket.io rooms | Socket.io internal memory | Each café's real-time viewers are grouped into a room keyed by `cafe:{cafe_id}`. No persistence needed. |
 
 ---
@@ -121,6 +120,7 @@ Only image binary data is stored in Cloudinary. The database never stores raw im
 3. **Request Auth:** Every protected route passes through the `authMiddleware`. It reads the `Authorization: Bearer <token>` header, verifies the JWT signature, checks the `jti` against the blacklist, and attaches `req.user` to the request.
 4. **Logout:** The `jti` from the token is inserted into the `token_blacklist` table. All subsequent requests with the same token are rejected.
 5. **Role Guard:** After `authMiddleware`, routes that require specific roles pass through `requireRole(...roles)` middleware. This returns `403 Forbidden` if `req.user.role` is not in the allowed list.
+6. **Account Creation:** Public registration accepts only `CUSTOMER` and `CAFE_ADMIN`. Café staff are created by their café admin, and the super admin account is not publicly registerable.
 
 ### Role Permissions Matrix
 

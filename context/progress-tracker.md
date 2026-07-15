@@ -8,7 +8,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Unit 2: Backend Authentication API & JWT Middleware.
+- Unit 5: Backend Café Registration & Super Admin API.
 
 ## Completed
 
@@ -20,14 +20,17 @@ Update this file after every meaningful implementation change.
 - [x] AI Development Workflow Rules (`context/ai-workflow-rules.md`)
 - [x] Build Units Roadmap (`context/specs/build-units.md`)
 - [x] Unit 1: Database Schema Initialization (Prisma schema + migration `init_users_and_token_blacklist` applied to Neon — `users` and `token_blacklist` live)
+- [x] Unit 2: Backend Authentication API & JWT Middleware (endpoints, token blacklist, validation, role gates completed and verified)
+- [x] Unit 3: Frontend Shell, Auth Context & Auth UI (Vite dev server client and routing configured and tested)
+- [x] Unit 4: Database Café, Tables, & Staff Models (Prisma schema models added and migration `20260715100609_add_cafe_tables_staff` successfully applied to Neon)
 
 ## In Progress
 
-- None (ready to start Unit 2).
+- None (ready to start Unit 5).
 
 ## Next Up
 
-- Unit 2: Backend Authentication API & JWT Middleware.
+- Unit 5: Backend Café Registration & Super Admin API.
 
 ## Open Questions
 
@@ -36,7 +39,7 @@ Update this file after every meaningful implementation change.
 ## Architecture Decisions
 
 - PostgreSQL for relational consistency and row-level locking during booking holds.
-- JWT stateless authentication with an in-memory blacklisting mechanism for MVP logout enforcement.
+- JWT stateless authentication with a PostgreSQL-backed blacklist for MVP logout enforcement.
 - Layered Express boundaries (Routes → Controllers → Services → Prisma).
 - Fluid-Fixed UI spacing based on an 8px grid with a Cream/Espresso brand theme.
 
@@ -44,3 +47,4 @@ Update this file after every meaningful implementation change.
 
 - The build plan contains 22 specific units mapped out in order.
 - Unit 1 verified: Neon Postgres connected; migration `20260714111328_init_users_and_token_blacklist` applied successfully.
+- Unit 2 corrected: public registration is limited to customers and café admins; validation, protected-route errors, and persisted token invalidation are verified locally.

@@ -20,7 +20,7 @@ This document defines the incremental build plan for the platform, divided into 
   - Route handlers: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`.
   - Auth services for bcrypt password hashing and stateless JWT signing/validation.
   - Middlewares: `authMiddleware` (gating route requests), `requireRoleMiddleware` (role validation), and `errorHandler`.
-  - In-memory JWT ID (`jti`) blacklist check to enforce logout.
+  - PostgreSQL-backed JWT ID (`jti`) blacklist check to enforce logout.
 - **Dependencies:** Unit 1.
 - **Verifiable Outcome:** Requesting `/api/auth/register` and `/api/auth/login` returns a signed JWT containing user metadata. Requesting `/api/auth/logout` blacklists the JWT. Route gating returns `401 Unauthorized` for missing tokens and `403 Forbidden` for role mismatches when tested via API client (e.g. Curl/Postman).
 

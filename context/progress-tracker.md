@@ -4,11 +4,11 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Phase 1 — Foundation (Setup & Authentication)
+- Phase 2 — Café Onboarding & Management
 
 ## Current Goal
 
-- Unit 5: Backend Café Registration & Super Admin API.
+- Unit 6: Frontend Café Onboarding & Admin Panel UI.
 
 ## Completed
 
@@ -23,14 +23,15 @@ Update this file after every meaningful implementation change.
 - [x] Unit 2: Backend Authentication API & JWT Middleware (endpoints, token blacklist, validation, role gates completed and verified)
 - [x] Unit 3: Frontend Shell, Auth Context & Auth UI (Vite dev server client and routing configured and tested)
 - [x] Unit 4: Database Café, Tables, & Staff Models (Prisma schema models added and migration `20260715100609_add_cafe_tables_staff` successfully applied to Neon)
+- [x] Unit 5: Backend Café Registration & Super Admin API (endpoints implemented, role-gating verified, approve/reject changed to PATCH methods, and verified using test script)
 
 ## In Progress
 
-- None (ready to start Unit 5).
+- None (ready to start Unit 6).
 
 ## Next Up
 
-- Unit 5: Backend Café Registration & Super Admin API.
+- Unit 6: Frontend Café Onboarding & Admin Panel UI.
 
 ## Open Questions
 

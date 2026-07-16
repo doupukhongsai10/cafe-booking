@@ -11,7 +11,7 @@ router.use(asyncHandler(authMiddleware));
 router.use(requireRole('SUPER_ADMIN'));
 
 router.get('/cafes/pending', asyncHandler(listPending));
-router.post('/cafes/:id/approve', asyncHandler(approve));
-router.post('/cafes/:id/reject', asyncHandler(reject));
+router.patch('/cafes/:id/approve', asyncHandler(approve));
+router.patch('/cafes/:id/reject', asyncHandler(reject));
 
 module.exports = router;

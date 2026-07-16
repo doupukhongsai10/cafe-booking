@@ -9,6 +9,7 @@ const cafeRoutes = require('./routes/cafe.routes');
 const adminRoutes = require('./routes/admin.routes');
 const healthRoutes = require('./routes/health.routes');
 const bookingRoutes = require('./routes/bookings.routes');
+const { initExpireHoldsJob } = require('./jobs/expireHolds.job');
 const { errorHandler } = require('./middleware/error.middleware');
 
 validateEnv();
@@ -31,6 +32,8 @@ app.get('/', (req, res) => {
   res.status(200).json({ data: { status: 'ok', message: 'Backend is running' } });
 });
 app.use(errorHandler);
+
+initExpireHoldsJob();
 
 const port = Number(process.env.PORT) || 5000;
 app.listen(port, () => {

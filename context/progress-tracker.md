@@ -8,7 +8,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Unit 11: Backend Hold Expiry Cron Job.
+- Unit 12: Backend Booking History & Cancellation API.
 
 ## Completed
 
@@ -29,14 +29,15 @@ Update this file after every meaningful implementation change.
 - [x] Unit 8: Frontend Café Owner Dashboard Configuration (table CRUD management, operating hours planner, and profile settings panels configured and verified)
 - [x] Unit 9: Database Booking Model (added Booking model and BookingStatus enum to Prisma schema, successfully migrated database and regenerated Prisma Client)
 - [x] Unit 10: Backend 5-Minute Booking Hold & Confirmation API (endpoints for placing holds and confirming reservations implemented, with database-level row locking verified)
+- [x] Unit 11: Backend Hold Expiry Cron Job (background cron job created using node-cron to clear stale holds every 30 seconds, successfully verified)
 
 ## In Progress
 
-- None (ready to start Unit 11).
+- None (ready to start Unit 12).
 
 ## Next Up
 
-- Unit 11: Backend Hold Expiry Cron Job.
+- Unit 12: Backend Booking History & Cancellation API.
 
 ## Open Questions
 

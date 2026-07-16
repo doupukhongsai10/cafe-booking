@@ -8,7 +8,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Unit 12: Backend Booking History & Cancellation API.
+- Unit 14: Frontend Café Discovery & Booking Flow.
 
 ## Completed
 
@@ -30,14 +30,16 @@ Update this file after every meaningful implementation change.
 - [x] Unit 9: Database Booking Model (added Booking model and BookingStatus enum to Prisma schema, successfully migrated database and regenerated Prisma Client)
 - [x] Unit 10: Backend 5-Minute Booking Hold & Confirmation API (endpoints for placing holds and confirming reservations implemented, with database-level row locking verified)
 - [x] Unit 11: Backend Hold Expiry Cron Job (background cron job created using node-cron to clear stale holds every 30 seconds, successfully verified)
+- [x] Unit 12: Backend Booking History & Cancellation API (endpoints for fetching customer booking history and cancelling holds/bookings with a 20-minute safety margin implemented and verified)
+- [x] Unit 13: Frontend Customer Booking History & Cancellation (customer home page now shows reservation history with cancel controls and live 20-min window checks)
 
 ## In Progress
 
-- None (ready to start Unit 12).
+- None (ready to start Unit 14).
 
 ## Next Up
 
-- Unit 12: Backend Booking History & Cancellation API.
+- Unit 14: Frontend Café Discovery & Booking Flow.
 
 ## Open Questions
 

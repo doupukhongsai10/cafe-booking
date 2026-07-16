@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
 import { getOwnedCafe } from '../services/cafe.service';
+import { getMyBookings, cancelBooking } from '../services/booking.service';
 
 function HomePage() {
   const { logout, user, token } = useAuth();
@@ -10,6 +11,10 @@ function HomePage() {
   const [cafe, setCafe] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [cancellingId, setCancellingId] = useState(null);
 
   async function handleLogout() {
     await logout();
@@ -31,6 +36,21 @@ function HomePage() {
         }
       }
       fetchCafe();
+    }
+
+    if (user?.role === 'CUSTOMER') {
+      async function fetchBookings() {
+        try {
+          setBookingsLoading(true);
+          const data = await getMyBookings(token);
+          setBookings(data);
+        } catch (err) {
+          // silently fail — empty list is fine
+        } finally {
+          setBookingsLoading(false);
+        }
+      }
+      fetchBookings();
     }
   }, [user, token]);
 
@@ -66,9 +86,117 @@ function HomePage() {
         )}
 
         {user?.role === 'CUSTOMER' && (
-          <p style={{ marginTop: '16px', color: 'var(--text-secondary)' }}>
-            Your customer account is active. Café discovery and table reservation features will be available in the next build unit!
-          </p>
+          <div style={{ marginTop: '28px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-heading)', marginBottom: '6px' }}>
+              My Reservations
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px' }}>
+              View and manage your upcoming and past café reservations.
+            </p>
+
+            {bookingsLoading ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading your reservations...</p>
+            ) : bookings.length === 0 ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center', background: 'var(--surface-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-default)' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>You have no reservations yet.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {bookings.map(b => {
+                  const STATUS_COLORS = {
+                    HELD: { bg: '#fff8e1', color: '#e65100' },
+                    CONFIRMED: { bg: '#e8f5e9', color: '#1b5e20' },
+                    CANCELLED: { bg: '#fafafa', color: '#999' },
+                    NO_SHOW: { bg: '#fce4ec', color: '#880e4f' },
+                    COMPLETED: { bg: '#e3f2fd', color: '#0d47a1' },
+                  };
+                  const sc = STATUS_COLORS[b.status] || { bg: '#f5f5f5', color: '#555' };
+
+                  // Compute whether the cancellation window is still open
+                  const [h, m] = b.startTime.split(':').map(Number);
+                  const startDt = new Date(b.bookingDate);
+                  startDt.setUTCHours(h, m, 0, 0);
+                  const canCancel = (b.status === 'CONFIRMED' || b.status === 'HELD') &&
+                    (startDt.getTime() - Date.now()) > 20 * 60 * 1000;
+                  const windowClosed = (b.status === 'CONFIRMED' || b.status === 'HELD') && !canCancel;
+
+                  async function handleCancel(bookingId) {
+                    if (!window.confirm('Are you sure you want to cancel this reservation?')) return;
+                    try {
+                      setCancellingId(bookingId);
+                      const updated = await cancelBooking(bookingId, token);
+                      setBookings(prev => prev.map(bk => bk.id === bookingId ? { ...bk, ...updated } : bk));
+                    } catch (err) {
+                      const msg = err.response?.data?.error || 'Failed to cancel reservation.';
+                      alert(msg);
+                    } finally {
+                      setCancellingId(null);
+                    }
+                  }
+
+                  return (
+                    <div key={b.id} style={{
+                      background: '#fff',
+                      border: '1px solid var(--border-default)',
+                      borderRadius: 'var(--radius-lg)',
+                      padding: '18px 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+                        <div>
+                          <p style={{ fontWeight: '700', color: 'var(--text-heading)', fontSize: '15px', margin: 0 }}>
+                            {b.cafe?.name ?? 'Café'}
+                          </p>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '2px 0 0' }}>
+                            {b.cafe?.area}, {b.cafe?.city}
+                          </p>
+                        </div>
+                        <span style={{ padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: '700', background: sc.bg, color: sc.color }}>
+                          {b.status}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                        <span>📅 {new Date(b.bookingDate).toLocaleDateString('en-IN', { dateStyle: 'medium', timeZone: 'UTC' })}</span>
+                        <span>⏰ {b.startTime} – {b.endTime}</span>
+                        <span>🪑 {b.table?.name} · {b.table?.zone}</span>
+                        <span>👥 Party of {b.partySize}</span>
+                      </div>
+
+                      {(b.status === 'CONFIRMED' || b.status === 'HELD') && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                          <button
+                            disabled={!canCancel || cancellingId === b.id}
+                            onClick={() => handleCancel(b.id)}
+                            style={{
+                              padding: '7px 16px',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              border: '1px solid var(--status-error)',
+                              background: 'transparent',
+                              color: canCancel ? 'var(--status-error)' : '#bbb',
+                              borderColor: canCancel ? 'var(--status-error)' : '#ddd',
+                              borderRadius: 'var(--radius-md)',
+                              cursor: canCancel ? 'pointer' : 'not-allowed',
+                            }}
+                          >
+                            {cancellingId === b.id ? 'Cancelling...' : 'Cancel Reservation'}
+                          </button>
+                          {windowClosed && (
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                              Cancellation window closed (&lt;20 min to start)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
 
         {(user?.role === 'CAFE_ADMIN' || user?.role === 'CAFE_STAFF') && (

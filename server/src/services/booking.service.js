@@ -134,7 +134,80 @@ async function confirmBooking(bookingId, userId) {
   });
 }
 
+async function getCustomerBookings(userId) {
+  return await prisma.booking.findMany({
+    where: { customerId: userId },
+    include: {
+      cafe: {
+        select: {
+          id: true,
+          name: true,
+          location: true,
+          city: true,
+          area: true,
+          coverPhotoUrl: true,
+        },
+      },
+      table: {
+        select: {
+          id: true,
+          name: true,
+          capacity: true,
+          zone: true,
+        },
+      },
+    },
+    orderBy: {
+      bookingDate: 'desc',
+    },
+  });
+}
+
+async function cancelBookingHold(bookingId, userId) {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+  });
+
+  if (!booking) {
+    throw new AppError('Booking not found.', 404, 'BOOKING_NOT_FOUND');
+  }
+
+  if (booking.customerId !== userId) {
+    throw new AppError('Forbidden: You did not make this booking.', 403, 'FORBIDDEN');
+  }
+
+  if (booking.status === 'CANCELLED') {
+    return booking;
+  }
+
+  if (booking.status !== 'CONFIRMED' && booking.status !== 'HELD') {
+    throw new AppError('Only active holds or confirmed bookings can be cancelled.', 400, 'INVALID_BOOKING_STATUS');
+  }
+
+  // Enforce 20-minute cancellation rule
+  const [hours, minutes] = booking.startTime.split(':').map(Number);
+  const startDateTime = new Date(booking.bookingDate);
+  startDateTime.setUTCHours(hours, minutes, 0, 0);
+
+  const CANCELLATION_WINDOW_MS = 20 * 60 * 1000;
+  const timeDiff = startDateTime.getTime() - Date.now();
+
+  if (timeDiff < CANCELLATION_WINDOW_MS) {
+    throw new AppError('Cannot cancel booking within 20 minutes of start time.', 403, 'CANCELLATION_WINDOW_CLOSED');
+  }
+
+  return await prisma.booking.update({
+    where: { id: bookingId },
+    data: {
+      status: 'CANCELLED',
+      cancelledAt: new Date(),
+    },
+  });
+}
+
 module.exports = {
   createBookingHold,
   confirmBooking,
+  getCustomerBookings,
+  cancelBookingHold,
 };

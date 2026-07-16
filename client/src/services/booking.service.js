@@ -31,3 +31,17 @@ export async function cancelBooking(bookingId, token) {
   );
   return response.data.data.booking;
 }
+
+export async function placeHold(data, token) {
+  const response = await bookingClient.post('/bookings', data, getHeaders(token));
+  return response.data.data.booking;
+}
+
+export async function confirmHold(bookingId, token) {
+  const response = await bookingClient.post(
+    `/bookings/${bookingId}/confirm`,
+    {},
+    getHeaders(token)
+  );
+  return response.data.data.booking;
+}

@@ -87,9 +87,26 @@ function HomePage() {
 
         {user?.role === 'CUSTOMER' && (
           <div style={{ marginTop: '28px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-heading)', marginBottom: '6px' }}>
-              My Reservations
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '6px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-heading)', margin: 0 }}>
+                My Reservations
+              </h2>
+              <button
+                onClick={() => navigate('/cafes')}
+                style={{
+                  padding: '9px 18px',
+                  background: 'var(--primary)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                }}
+              >
+                + Browse Cafés
+              </button>
+            </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px' }}>
               View and manage your upcoming and past café reservations.
             </p>

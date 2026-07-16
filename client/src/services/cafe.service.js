@@ -86,3 +86,14 @@ export async function updateOperatingHours(cafeId, hoursData, token) {
   const response = await cafeClient.patch(`/cafes/${cafeId}/hours`, hoursData, getHeaders(token));
   return response.data.data.cafe;
 }
+
+export async function listCafes() {
+  const response = await cafeClient.get('/cafes');
+  return response.data.data.cafes;
+}
+
+export async function getCafeTables(cafeId, token) {
+  const config = token ? getHeaders(token) : {};
+  const response = await cafeClient.get(`/cafes/${cafeId}/tables`, config);
+  return response.data.data.tables;
+}

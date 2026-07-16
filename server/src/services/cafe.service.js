@@ -103,6 +103,26 @@ async function updateCafeProfile(id, ownerId, data) {
   });
 }
 
+async function listApprovedCafes() {
+  return await prisma.cafe.findMany({
+    where: { status: 'APPROVED' },
+    include: {
+      tables: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          capacity: true,
+          zone: true,
+          description: true,
+          isActive: true,
+        },
+      },
+    },
+    orderBy: { name: 'asc' },
+  });
+}
+
 module.exports = {
   createCafe,
   getPendingCafes,
@@ -110,4 +130,5 @@ module.exports = {
   updateCafeStatus,
   getCafeByOwnerId,
   updateCafeProfile,
+  listApprovedCafes,
 };

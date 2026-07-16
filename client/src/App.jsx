@@ -6,6 +6,8 @@ import RegisterPage from './pages/RegisterPage';
 import CafeOnboardingPage from './pages/CafeOnboardingPage';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import CafeDashboardPage from './pages/CafeDashboardPage';
+import CafeDiscoveryPage from './pages/CafeDiscoveryPage';
+import CafeDetailPage from './pages/CafeDetailPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -65,6 +67,22 @@ function App() {
         element={(
           <RoleProtectedRoute allowedRoles={['CAFE_ADMIN', 'CAFE_STAFF']}>
             <CafeDashboardPage />
+          </RoleProtectedRoute>
+        )}
+      />
+      <Route
+        path="/cafes"
+        element={(
+          <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+            <CafeDiscoveryPage />
+          </RoleProtectedRoute>
+        )}
+      />
+      <Route
+        path="/cafes/:id"
+        element={(
+          <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+            <CafeDetailPage />
           </RoleProtectedRoute>
         )}
       />

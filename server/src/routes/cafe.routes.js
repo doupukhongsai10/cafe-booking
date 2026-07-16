@@ -3,10 +3,13 @@ const { asyncHandler } = require('../middleware/asyncHandler');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/role.middleware');
 const { cafeUpload } = require('../middleware/upload.middleware');
-const { register, getOwned, updateProfile } = require('../controllers/cafe.controller');
+const { register, getOwned, updateProfile, listCafes } = require('../controllers/cafe.controller');
 const { addTable, listTables, editTable, removeTable, setHours } = require('../controllers/table.controller');
 
 const router = express.Router();
+
+// Public: Browse approved cafés (no auth required)
+router.get('/', asyncHandler(listCafes));
 
 router.post(
   '/',

@@ -8,7 +8,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Unit 7: Backend Table CRUD & Operating Hours API.
+- Unit 8: Frontend Café Owner Dashboard Configuration.
 
 ## Completed
 
@@ -25,14 +25,15 @@ Update this file after every meaningful implementation change.
 - [x] Unit 4: Database Café, Tables, & Staff Models (Prisma schema models added and migration `20260715100609_add_cafe_tables_staff` successfully applied to Neon)
 - [x] Unit 5: Backend Café Registration & Super Admin API (endpoints implemented, role-gating verified, approve/reject changed to PATCH methods, and verified using test script)
 - [x] Unit 6: Frontend Café Onboarding & Admin Panel UI (onboarding form, super admin dashboard page, and status routes verified)
+- [x] Unit 7: Backend Table CRUD & Operating Hours API (endpoints for table management and hours implemented, and tenancy controls verified)
 
 ## In Progress
 
-- None (ready to start Unit 7).
+- None (ready to start Unit 8).
 
 ## Next Up
 
-- Unit 7: Backend Table CRUD & Operating Hours API.
+- Unit 8: Frontend Café Owner Dashboard Configuration.
 
 ## Open Questions
 

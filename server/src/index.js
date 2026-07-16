@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth.routes');
 const cafeRoutes = require('./routes/cafe.routes');
 const adminRoutes = require('./routes/admin.routes');
 const healthRoutes = require('./routes/health.routes');
+const bookingRoutes = require('./routes/bookings.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 
 validateEnv();
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cafes', cafeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.get('/', (req, res) => {
   res.status(200).json({ data: { status: 'ok', message: 'Backend is running' } });
 });

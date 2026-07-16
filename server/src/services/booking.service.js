@@ -205,9 +205,72 @@ async function cancelBookingHold(bookingId, userId) {
   });
 }
 
+async function getCafeBookings(cafeId, ownerId) {
+  // Tenancy check: verify the caller owns this café
+  const cafe = await prisma.cafe.findUnique({ where: { id: cafeId } });
+  if (!cafe) {
+    throw new AppError('Café not found.', 404, 'CAFE_NOT_FOUND');
+  }
+  if (cafe.ownerId !== ownerId) {
+    throw new AppError('Forbidden: You do not own this café.', 403, 'FORBIDDEN');
+  }
+
+  return await prisma.booking.findMany({
+    where: {
+      cafeId,
+      status: { not: 'HELD' }, // Exclude transient holds
+    },
+    include: {
+      customer: {
+        select: { id: true, name: true, email: true },
+      },
+      table: {
+        select: { id: true, name: true, zone: true, capacity: true },
+      },
+    },
+    orderBy: [
+      { bookingDate: 'desc' },
+      { startTime: 'desc' },
+    ],
+  });
+}
+
+async function updateBookingStatus(bookingId, ownerId, newStatus) {
+  const ALLOWED_STATUSES = ['COMPLETED', 'NO_SHOW'];
+  if (!ALLOWED_STATUSES.includes(newStatus)) {
+    throw new AppError(`Invalid status. Allowed: ${ALLOWED_STATUSES.join(', ')}.`, 400, 'INVALID_STATUS');
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { cafe: true },
+  });
+
+  if (!booking) {
+    throw new AppError('Booking not found.', 404, 'BOOKING_NOT_FOUND');
+  }
+
+  // Tenancy check
+  if (booking.cafe.ownerId !== ownerId) {
+    throw new AppError('Forbidden: You do not own the café for this booking.', 403, 'FORBIDDEN');
+  }
+
+  // Only CONFIRMED bookings can transition to COMPLETED or NO_SHOW
+  if (booking.status !== 'CONFIRMED') {
+    throw new AppError('Only confirmed bookings can be marked as completed or no-show.', 400, 'INVALID_BOOKING_STATUS');
+  }
+
+  return await prisma.booking.update({
+    where: { id: bookingId },
+    data: { status: newStatus },
+  });
+}
+
 module.exports = {
   createBookingHold,
   confirmBooking,
   getCustomerBookings,
   cancelBookingHold,
+  getCafeBookings,
+  updateBookingStatus,
 };

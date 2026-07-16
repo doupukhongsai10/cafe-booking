@@ -8,7 +8,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Unit 15: Café Owner Bookings Dashboard (view incoming reservations, mark no-show/completed).
+- Unit 16: Final polish — notifications, edge case hardening, and production readiness.
 
 ## Completed
 
@@ -33,14 +33,15 @@ Update this file after every meaningful implementation change.
 - [x] Unit 12: Backend Booking History & Cancellation API (endpoints for fetching customer booking history and cancelling holds/bookings with a 20-minute safety margin implemented and verified)
 - [x] Unit 13: Frontend Customer Booking History & Cancellation (customer home page now shows reservation history with cancel controls and live 20-min window checks)
 - [x] Unit 14: Frontend Café Discovery & Booking Flow (public café listing with search, café detail page with table picker, 5-minute hold placement, live countdown, and confirmation flow)
+- [x] Unit 15: Café Owner Bookings Dashboard (Reservations tab added to café dashboard; owners can view all bookings and mark CONFIRMED bookings as COMPLETED or NO_SHOW)
 
 ## In Progress
 
-- None (ready to start Unit 15).
+- None (ready for Unit 16).
 
 ## Next Up
 
-- Unit 15: Café Owner Bookings Dashboard.
+- Unit 16: Final polish — in-app notifications, empty states, and edge case hardening.
 
 ## Open Questions
 

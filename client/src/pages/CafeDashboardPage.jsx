@@ -10,6 +10,7 @@ import {
   updateOperatingHours,
   updateCafeProfile
 } from '../services/cafe.service';
+import { getCafeBookings, updateBookingStatus } from '../services/booking.service';
 
 const DAYS_OF_WEEK = [
   'monday',
@@ -27,7 +28,7 @@ function CafeDashboardPage() {
   const { token, user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('tables'); // 'tables' | 'hours' | 'profile'
+  const [activeTab, setActiveTab] = useState('tables'); // 'tables' | 'hours' | 'profile' | 'reservations'
   const [cafe, setCafe] = useState(null);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,11 @@ function CafeDashboardPage() {
   const [tableForm, setTableForm] = useState({ name: '', capacity: 2, zone: 'INDOOR', description: '' });
   const [tableActionLoading, setTableActionLoading] = useState(false);
   const [tableError, setTableError] = useState('');
+
+  // Reservations state
+  const [reservations, setReservations] = useState([]);
+  const [reservationsLoading, setReservationsLoading] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
 
   // Operating Hours state
   const [hours, setHours] = useState({});
@@ -317,6 +323,31 @@ function CafeDashboardPage() {
             }}
           >
             Profile Editor
+          </button>
+          <button
+            onClick={() => {
+              handleTabChange('reservations');
+              if (cafe && reservations.length === 0) {
+                setReservationsLoading(true);
+                getCafeBookings(cafe.id, token)
+                  .then(setReservations)
+                  .catch(() => {})
+                  .finally(() => setReservationsLoading(false));
+              }
+            }}
+            style={{
+              padding: '12px 20px',
+              border: 0,
+              background: 'transparent',
+              color: activeTab === 'reservations' ? 'var(--primary)' : 'var(--text-muted)',
+              borderBottom: activeTab === 'reservations' ? '2px solid var(--primary)' : '2px solid transparent',
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontSize: '15px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Reservations
           </button>
         </nav>
 
@@ -800,6 +831,131 @@ function CafeDashboardPage() {
                 {profileLoading ? 'Saving settings...' : 'Save Profile Changes'}
               </button>
             </form>
+          </section>
+        )}
+
+        {/* --- 4. RESERVATIONS TAB --- */}
+        {activeTab === 'reservations' && (
+          <section>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-heading)', margin: 0 }}>Incoming Reservations</h2>
+              <button
+                onClick={() => {
+                  if (!cafe) return;
+                  setReservationsLoading(true);
+                  getCafeBookings(cafe.id, token)
+                    .then(setReservations)
+                    .catch(() => {})
+                    .finally(() => setReservationsLoading(false));
+                }}
+                style={{ padding: '8px 16px', border: '1px solid var(--border-default)', background: 'transparent', borderRadius: 'var(--radius-md)', fontWeight: '600', fontSize: '13px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+              >
+                ↻ Refresh
+              </button>
+            </div>
+
+            {reservationsLoading ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading reservations…</p>
+            ) : reservations.length === 0 ? (
+              <div style={{ padding: '48px 20px', textAlign: 'center', background: 'var(--surface-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-default)' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>No reservations yet for this café.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {reservations.map(b => {
+                  const STATUS_COLORS = {
+                    CONFIRMED:  { bg: '#e8f5e9', color: '#1b5e20' },
+                    CANCELLED:  { bg: '#fafafa',  color: '#999' },
+                    NO_SHOW:    { bg: '#fce4ec',  color: '#880e4f' },
+                    COMPLETED:  { bg: '#e3f2fd',  color: '#0d47a1' },
+                  };
+                  const sc = STATUS_COLORS[b.status] || { bg: '#f5f5f5', color: '#555' };
+                  const isUpdating = updatingId === b.id;
+
+                  async function handleStatusUpdate(newStatus) {
+                    try {
+                      setUpdatingId(b.id);
+                      const updated = await updateBookingStatus(b.id, newStatus, token);
+                      setReservations(prev => prev.map(r => r.id === b.id ? { ...r, ...updated } : r));
+                    } catch (err) {
+                      alert(err.response?.data?.error || 'Failed to update status.');
+                    } finally {
+                      setUpdatingId(null);
+                    }
+                  }
+
+                  return (
+                    <div key={b.id} style={{
+                      background: 'var(--surface-primary)',
+                      border: '1px solid var(--border-default)',
+                      borderRadius: 'var(--radius-lg)',
+                      padding: '18px 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+                        <div>
+                          <p style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-heading)', margin: 0 }}>
+                            {b.customer?.name}
+                          </p>
+                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                            {b.customer?.email}
+                          </p>
+                        </div>
+                        <span style={{ padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '12px', fontWeight: '700', background: sc.bg, color: sc.color }}>
+                          {b.status}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                        <span>📅 {new Date(b.bookingDate).toLocaleDateString('en-IN', { dateStyle: 'medium', timeZone: 'UTC' })}</span>
+                        <span>⏰ {b.startTime} – {b.endTime}</span>
+                        <span>🪑 {b.table?.name} · {b.table?.zone}</span>
+                        <span>👥 Party of {b.partySize}</span>
+                      </div>
+
+                      {b.status === 'CONFIRMED' && (
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '4px', flexWrap: 'wrap' }}>
+                          <button
+                            disabled={isUpdating}
+                            onClick={() => handleStatusUpdate('COMPLETED')}
+                            style={{
+                              padding: '7px 16px',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              border: '1px solid #a5d6a7',
+                              background: '#e8f5e9',
+                              color: '#1b5e20',
+                              borderRadius: 'var(--radius-md)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {isUpdating ? '…' : '✓ Mark Completed'}
+                          </button>
+                          <button
+                            disabled={isUpdating}
+                            onClick={() => handleStatusUpdate('NO_SHOW')}
+                            style={{
+                              padding: '7px 16px',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              border: '1px solid #f48fb1',
+                              background: '#fce4ec',
+                              color: '#880e4f',
+                              borderRadius: 'var(--radius-md)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {isUpdating ? '…' : '✗ Mark No-Show'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
         )}
       </div>

@@ -45,3 +45,17 @@ export async function confirmHold(bookingId, token) {
   );
   return response.data.data.booking;
 }
+
+export async function getCafeBookings(cafeId, token) {
+  const response = await bookingClient.get(`/bookings/cafe/${cafeId}`, getHeaders(token));
+  return response.data.data.bookings;
+}
+
+export async function updateBookingStatus(bookingId, status, token) {
+  const response = await bookingClient.patch(
+    `/bookings/${bookingId}/status`,
+    { status },
+    getHeaders(token)
+  );
+  return response.data.data.booking;
+}

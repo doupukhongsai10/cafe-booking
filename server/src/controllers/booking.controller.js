@@ -4,6 +4,8 @@ const {
   confirmBooking,
   getCustomerBookings,
   cancelBookingHold,
+  getCafeBookings,
+  updateBookingStatus,
 } = require('../services/booking.service');
 
 async function placeHold(req, res) {
@@ -33,9 +35,26 @@ async function cancel(req, res) {
   return res.status(200).json({ data: { booking } });
 }
 
+async function listCafeBookings(req, res) {
+  const { cafeId } = req.params;
+  const bookings = await getCafeBookings(cafeId, req.user.id);
+
+  return res.status(200).json({ data: { bookings } });
+}
+
+async function updateStatus(req, res) {
+  const { id } = req.params;
+  const { status } = req.body;
+  const booking = await updateBookingStatus(id, req.user.id, status);
+
+  return res.status(200).json({ data: { booking } });
+}
+
 module.exports = {
   placeHold,
   confirm,
   listMyBookings,
   cancel,
+  listCafeBookings,
+  updateStatus,
 };

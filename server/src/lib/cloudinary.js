@@ -10,7 +10,7 @@ const isCloudinaryConfigured =
 
 async function uploadImageBuffer(buffer, folder = 'cafe-onboarding') {
   if (!isCloudinaryConfigured) {
-    logger.warn('Cloudinary URL is not configured. Falling back to a mock café image URL.');
+    logger.info('Cloudinary URL is not configured. Falling back to a mock café image URL.');
     // Returns a high-quality coffee shop mock image
     return 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80';
   }

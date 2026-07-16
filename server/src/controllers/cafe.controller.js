@@ -1,5 +1,5 @@
 const { registerCafeSchema, rejectCafeSchema } = require('../validators/cafe.validators');
-const { createCafe, getPendingCafes, updateCafeStatus } = require('../services/cafe.service');
+const { createCafe, getPendingCafes, updateCafeStatus, getCafeByOwnerId } = require('../services/cafe.service');
 const { uploadImageBuffer } = require('../lib/cloudinary');
 const { AppError } = require('../utils/errors');
 
@@ -50,9 +50,15 @@ async function reject(req, res) {
   return res.status(200).json({ data: { cafe } });
 }
 
+async function getOwned(req, res) {
+  const cafe = await getCafeByOwnerId(req.user.id);
+  return res.status(200).json({ data: { cafe } });
+}
+
 module.exports = {
   register,
   listPending,
   approve,
   reject,
+  getOwned,
 };

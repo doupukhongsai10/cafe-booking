@@ -8,7 +8,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Unit 6: Frontend Café Onboarding & Admin Panel UI.
+- Unit 7: Backend Table CRUD & Operating Hours API.
 
 ## Completed
 
@@ -24,14 +24,15 @@ Update this file after every meaningful implementation change.
 - [x] Unit 3: Frontend Shell, Auth Context & Auth UI (Vite dev server client and routing configured and tested)
 - [x] Unit 4: Database Café, Tables, & Staff Models (Prisma schema models added and migration `20260715100609_add_cafe_tables_staff` successfully applied to Neon)
 - [x] Unit 5: Backend Café Registration & Super Admin API (endpoints implemented, role-gating verified, approve/reject changed to PATCH methods, and verified using test script)
+- [x] Unit 6: Frontend Café Onboarding & Admin Panel UI (onboarding form, super admin dashboard page, and status routes verified)
 
 ## In Progress
 
-- None (ready to start Unit 6).
+- None (ready to start Unit 7).
 
 ## Next Up
 
-- Unit 6: Frontend Café Onboarding & Admin Panel UI.
+- Unit 7: Backend Table CRUD & Operating Hours API.
 
 ## Open Questions
 

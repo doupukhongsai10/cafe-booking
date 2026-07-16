@@ -75,9 +75,25 @@ async function updateCafeStatus(id, status, reason = null) {
   });
 }
 
+async function getCafeByOwnerId(ownerId) {
+  return await prisma.cafe.findFirst({
+    where: { ownerId },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
 module.exports = {
   createCafe,
   getPendingCafes,
   getCafeById,
   updateCafeStatus,
+  getCafeByOwnerId,
 };

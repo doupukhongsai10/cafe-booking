@@ -187,6 +187,7 @@ When a customer selects a table:
 
 /api/cafes
   GET  /                  → Browse cafés (with filters: location, rating, time)
+  GET  /my                → Get owned café profile & onboarding status (café admin/staff)
   GET  /:id               → Single café details
   POST /                  → Register new café (café admin)
   PATCH/:id               → Update café profile (café admin)

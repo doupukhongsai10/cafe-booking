@@ -3,12 +3,28 @@ import { useAuth } from './store/AuthContext';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import CafeOnboardingPage from './pages/CafeOnboardingPage';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+function RoleProtectedRoute({ children, allowedRoles }) {
+  const { isAuthenticated, user } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -25,6 +41,22 @@ function App() {
           <ProtectedRoute>
             <HomePage />
           </ProtectedRoute>
+        )}
+      />
+      <Route
+        path="/onboard"
+        element={(
+          <RoleProtectedRoute allowedRoles={['CAFE_ADMIN']}>
+            <CafeOnboardingPage />
+          </RoleProtectedRoute>
+        )}
+      />
+      <Route
+        path="/admin/dashboard"
+        element={(
+          <RoleProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+            <SuperAdminDashboard />
+          </RoleProtectedRoute>
         )}
       />
       <Route path="*" element={<Navigate to="/" replace />} />

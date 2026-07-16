@@ -8,7 +8,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Unit 9: Database Booking Model.
+- Unit 10: Backend 5-Minute Booking Hold & Confirmation API.
 
 ## Completed
 
@@ -27,14 +27,15 @@ Update this file after every meaningful implementation change.
 - [x] Unit 6: Frontend Café Onboarding & Admin Panel UI (onboarding form, super admin dashboard page, and status routes verified)
 - [x] Unit 7: Backend Table CRUD & Operating Hours API (endpoints for table management and hours implemented, and tenancy controls verified)
 - [x] Unit 8: Frontend Café Owner Dashboard Configuration (table CRUD management, operating hours planner, and profile settings panels configured and verified)
+- [x] Unit 9: Database Booking Model (added Booking model and BookingStatus enum to Prisma schema, successfully migrated database and regenerated Prisma Client)
 
 ## In Progress
 
-- None (ready to start Unit 9).
+- None (ready to start Unit 10).
 
 ## Next Up
 
-- Unit 9: Database Booking Model.
+- Unit 10: Backend 5-Minute Booking Hold & Confirmation API.
 
 ## Open Questions
 

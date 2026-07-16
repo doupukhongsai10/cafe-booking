@@ -43,6 +43,7 @@ model User {
   cafesOwned   Cafe[]      @relation("CafeOwner")
   staffRecord  CafeStaff[] @relation("StaffUser")
   staffAdded   CafeStaff[] @relation("StaffAdder")
+  bookings     Booking[]
 
   @@map("users")
 }
@@ -78,6 +79,7 @@ model Cafe {
   owner          User        @relation("CafeOwner", fields: [ownerId], references: [id])
   tables         Table[]
   staff          CafeStaff[]
+  bookings       Booking[]
 
   @@map("cafes")
 }
@@ -93,6 +95,7 @@ model Table {
 
   // Relations
   cafe        Cafe      @relation(fields: [cafeId], references: [id])
+  bookings    Booking[]
 
   @@map("tables")
 }
@@ -109,4 +112,34 @@ model CafeStaff {
   addedBy   User     @relation("StaffAdder", fields: [addedById], references: [id])
 
   @@map("cafe_staff")
+}
+
+enum BookingStatus {
+  HELD
+  CONFIRMED
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  customerId    String        @map("customer_id")
+  cafeId        String        @map("cafe_id")
+  tableId       String        @map("table_id")
+  bookingDate   DateTime      @map("booking_date")
+  startTime     String        @map("start_time")
+  endTime       String        @map("end_time")
+  partySize     Int           @map("party_size")
+  status        BookingStatus
+  holdExpiresAt DateTime?     @map("hold_expires_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  cancelledAt   DateTime?     @map("cancelled_at")
+
+  // Relations
+  customer      User          @relation(fields: [customerId], references: [id])
+  cafe          Cafe          @relation(fields: [cafeId], references: [id])
+  table         Table         @relation(fields: [tableId], references: [id])
+
+  @@map("bookings")
 }

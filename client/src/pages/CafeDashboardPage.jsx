@@ -327,11 +327,13 @@ function CafeDashboardPage() {
           <button
             onClick={() => {
               handleTabChange('reservations');
-              if (cafe && reservations.length === 0) {
+              if (cafe) {
                 setReservationsLoading(true);
                 getCafeBookings(cafe.id, token)
                   .then(setReservations)
-                  .catch(() => {})
+                  .catch((err) => {
+                    setError(err.response?.data?.error || 'Failed to fetch reservations.');
+                  })
                   .finally(() => setReservationsLoading(false));
               }
             }}
@@ -842,10 +844,13 @@ function CafeDashboardPage() {
               <button
                 onClick={() => {
                   if (!cafe) return;
+                  setError('');
                   setReservationsLoading(true);
                   getCafeBookings(cafe.id, token)
                     .then(setReservations)
-                    .catch(() => {})
+                    .catch((err) => {
+                      setError(err.response?.data?.error || 'Failed to refresh reservations.');
+                    })
                     .finally(() => setReservationsLoading(false));
                 }}
                 style={{ padding: '8px 16px', border: '1px solid var(--border-default)', background: 'transparent', borderRadius: 'var(--radius-md)', fontWeight: '600', fontSize: '13px', cursor: 'pointer', color: 'var(--text-secondary)' }}

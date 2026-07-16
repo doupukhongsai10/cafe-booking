@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
 import { getOwnedCafe } from '../services/cafe.service';
 import { getMyBookings, cancelBooking } from '../services/booking.service';
+import { useToast } from '../store/ToastContext';
+import { submitReview } from '../services/review.service';
 
 function HomePage() {
   const { logout, user, token } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const toast = useToast();
 
   const [cafe, setCafe] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,6 +19,46 @@ function HomePage() {
   const [bookings, setBookings] = useState([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
+
+  // Review modal states
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewBookingId, setReviewBookingId] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+
+  async function handleReviewSubmit(e) {
+    e.preventDefault();
+    setReviewError('');
+    setReviewSubmitting(true);
+    try {
+      const reviewObj = await submitReview({
+        bookingId: reviewBookingId,
+        rating: Number(rating),
+        comment,
+      }, token);
+      
+      setBookings(prev => prev.map(bk => bk.id === reviewBookingId ? { ...bk, review: reviewObj } : bk));
+      toast.success('Review submitted successfully!');
+      setReviewModalOpen(false);
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to submit review.';
+      setReviewError(msg);
+      toast.error(msg);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }
+
+  // Check for confirmed booking state on redirect
+  useEffect(() => {
+    if (location.state?.confirmed) {
+      toast.success('Reservation confirmed successfully!');
+      // Clear location state so the toast doesn't reappear on reload
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, toast, navigate]);
 
   async function handleLogout() {
     await logout();
@@ -143,9 +187,10 @@ function HomePage() {
                       setCancellingId(bookingId);
                       const updated = await cancelBooking(bookingId, token);
                       setBookings(prev => prev.map(bk => bk.id === bookingId ? { ...bk, ...updated } : bk));
+                      toast.success('Reservation cancelled successfully.');
                     } catch (err) {
                       const msg = err.response?.data?.error || 'Failed to cancel reservation.';
-                      alert(msg);
+                      toast.error(msg);
                     } finally {
                       setCancellingId(null);
                     }
@@ -208,9 +253,158 @@ function HomePage() {
                           )}
                         </div>
                       )}
+                      {b.status === 'COMPLETED' && !b.review && (
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                          <button
+                            onClick={() => {
+                              setReviewBookingId(b.id);
+                              setRating(5);
+                              setComment('');
+                              setReviewError('');
+                              setReviewModalOpen(true);
+                            }}
+                            style={{
+                              padding: '7px 16px',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              border: '1px solid var(--secondary)',
+                              background: 'transparent',
+                              color: 'var(--text-heading)',
+                              borderRadius: 'var(--radius-md)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ✏ Write Review
+                          </button>
+                        </div>
+                      )}
+                      {b.status === 'COMPLETED' && b.review && (
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', fontWeight: '600' }}>
+                          ★ Reviewed ({b.review.rating}/5)
+                        </div>
+                      )}
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Review Modal Overlay */}
+            {reviewModalOpen && (
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999,
+                padding: '20px',
+              }}>
+                <div style={{
+                  background: '#fff',
+                  padding: '28px',
+                  borderRadius: 'var(--radius-xl)',
+                  width: '100%',
+                  maxWidth: '460px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-heading)', margin: 0 }}>
+                    Write a Review
+                  </h3>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
+                    Share your experience with Aura Reserve and other diners!
+                  </p>
+
+                  <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-heading)', display: 'block', marginBottom: '8px' }}>
+                        Rating
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px', fontSize: '28px', cursor: 'pointer', color: 'var(--secondary)' }}>
+                        {[1, 2, 3, 4, 5].map(num => (
+                          <span
+                            key={num}
+                            onClick={() => setRating(num)}
+                            style={{ userSelect: 'none' }}
+                          >
+                            {num <= rating ? '★' : '☆'}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="review-comment" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-heading)', display: 'block', marginBottom: '6px' }}>
+                        Comment
+                      </label>
+                      <textarea
+                        id="review-comment"
+                        rows={4}
+                        required
+                        placeholder="Tell us what you liked or how we can improve..."
+                        value={comment}
+                        onChange={e => setComment(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--border-default)',
+                          fontSize: '14px',
+                          boxSizing: 'border-box',
+                          outline: 'none',
+                          resize: 'vertical',
+                          fontFamily: 'inherit',
+                        }}
+                      />
+                    </div>
+
+                    {reviewError && (
+                      <p style={{ color: 'var(--status-error)', fontSize: '13px', margin: 0 }}>{reviewError}</p>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setReviewModalOpen(false); setReviewError(''); }}
+                        style={{
+                          padding: '8px 16px',
+                          border: '1px solid var(--border-default)',
+                          background: 'transparent',
+                          color: 'var(--text-secondary)',
+                          borderRadius: 'var(--radius-md)',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={reviewSubmitting}
+                        style={{
+                          padding: '8px 20px',
+                          background: 'var(--primary)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 'var(--radius-md)',
+                          fontWeight: '700',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {reviewSubmitting ? 'Submitting…' : 'Submit Review'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
           </div>

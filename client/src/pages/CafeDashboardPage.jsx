@@ -11,6 +11,8 @@ import {
   updateCafeProfile
 } from '../services/cafe.service';
 import { getCafeBookings, updateBookingStatus } from '../services/booking.service';
+import { useToast } from '../store/ToastContext';
+import { getStaffList, addStaffUser, deleteStaffUser } from '../services/staff.service';
 
 const DAYS_OF_WEEK = [
   'monday',
@@ -27,13 +29,13 @@ const TABLE_ZONES = ['INDOOR', 'OUTDOOR', 'ROOFTOP', 'PRIVATE'];
 function CafeDashboardPage() {
   const { token, user, logout } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
-  const [activeTab, setActiveTab] = useState('tables'); // 'tables' | 'hours' | 'profile' | 'reservations'
+  const [activeTab, setActiveTab] = useState(user?.role === 'CAFE_STAFF' ? 'reservations' : 'tables'); // 'tables' | 'hours' | 'profile' | 'reservations' | 'staff'
   const [cafe, setCafe] = useState(null);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
 
   // Tables state
   const [editingTable, setEditingTable] = useState(null); // table object or null
@@ -50,6 +52,14 @@ function CafeDashboardPage() {
   // Operating Hours state
   const [hours, setHours] = useState({});
   const [hoursLoading, setHoursLoading] = useState(false);
+
+  // Staff states
+  const [staffList, setStaffList] = useState([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [showStaffForm, setShowStaffForm] = useState(false);
+  const [staffForm, setStaffForm] = useState({ name: '', email: '', password: '' });
+  const [staffActionLoading, setStaffActionLoading] = useState(false);
+  const [staffError, setStaffError] = useState('');
 
   // Profile Form state
   const [profileForm, setProfileForm] = useState({
@@ -96,6 +106,19 @@ function CafeDashboardPage() {
       // Fetch tables
       const tablesData = await getTables(cafeData.id, token);
       setTables(tablesData);
+
+      // Pre-fetch reservations for staff users who default to the reservations tab
+      if (user?.role === 'CAFE_STAFF') {
+        try {
+          setReservationsLoading(true);
+          const bookingsData = await getCafeBookings(cafeData.id, token);
+          setReservations(bookingsData);
+        } catch {
+          // fail silently
+        } finally {
+          setReservationsLoading(false);
+        }
+      }
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to load dashboard data.');
     } finally {
@@ -143,11 +166,11 @@ function CafeDashboardPage() {
       if (editingTable) {
         const updated = await updateTable(cafe.id, editingTable.id, tableForm, token);
         setTables((prev) => prev.map((t) => (t.id === editingTable.id ? updated : t)));
-        setSuccessMsg(`Successfully updated table: ${updated.name}`);
+        toast.success(`Successfully updated table: ${updated.name}`);
       } else {
         const created = await createTable(cafe.id, tableForm, token);
         setTables((prev) => [...prev, created]);
-        setSuccessMsg(`Successfully added table: ${created.name}`);
+        toast.success(`Successfully added table: ${created.name}`);
       }
       setShowTableForm(false);
     } catch (err) {
@@ -161,23 +184,20 @@ function CafeDashboardPage() {
     try {
       const updated = await updateTable(cafe.id, table.id, { isActive: !table.isActive }, token);
       setTables((prev) => prev.map((t) => (t.id === table.id ? updated : t)));
-      setSuccessMsg(`Table status updated for: ${table.name}`);
+      toast.success(`Table status updated for: ${table.name}`);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to update table status.');
+      toast.error(err.response?.data?.error || 'Failed to update table status.');
     }
   }
 
   async function handleDeleteTable(tableId) {
     if (!window.confirm('Are you sure you want to delete this table?')) return;
-    setError('');
-    setSuccessMsg('');
-
     try {
       await deleteTable(cafe.id, tableId, token);
       setTables((prev) => prev.filter((t) => t.id !== tableId));
-      setSuccessMsg('Table successfully deleted.');
+      toast.success('Table successfully deleted.');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to delete table.');
+      toast.error(err.response?.data?.error || 'Failed to delete table.');
     }
   }
 
@@ -195,15 +215,12 @@ function CafeDashboardPage() {
   async function handleHoursSubmit(e) {
     e.preventDefault();
     setHoursLoading(true);
-    setSuccessMsg('');
-    setError('');
-
     try {
       const updatedCafe = await updateOperatingHours(cafe.id, hours, token);
       setCafe(updatedCafe);
-      setSuccessMsg('Operating hours updated successfully.');
+      toast.success('Operating hours updated successfully.');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to update hours.');
+      toast.error(err.response?.data?.error || 'Failed to update hours.');
     } finally {
       setHoursLoading(false);
     }
@@ -218,9 +235,6 @@ function CafeDashboardPage() {
   async function handleProfileSubmit(e) {
     e.preventDefault();
     setProfileLoading(true);
-    setSuccessMsg('');
-    setError('');
-
     try {
       const formData = new FormData();
       formData.append('name', profileForm.name);
@@ -236,10 +250,10 @@ function CafeDashboardPage() {
 
       const updated = await updateCafeProfile(cafe.id, formData, token);
       setCafe(updated);
-      setSuccessMsg('Café profile updated successfully.');
+      toast.success('Café profile updated successfully.');
       setCoverPhoto(null);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to update profile details.');
+      toast.error(err.response?.data?.error || 'Failed to update profile details.');
     } finally {
       setProfileLoading(false);
     }
@@ -276,54 +290,58 @@ function CafeDashboardPage() {
       <div style={{ maxWidth: '1000px', margin: '40px auto 100px', padding: '0 20px' }}>
         {/* Navigation Tabs */}
         <nav style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-default)', marginBottom: '32px', paddingBottom: '4px' }}>
-          <button
-            onClick={() => handleTabChange('tables')}
-            style={{
-              padding: '12px 20px',
-              border: 0,
-              background: 'transparent',
-              color: activeTab === 'tables' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'tables' ? '2px solid var(--primary)' : '2px solid transparent',
-              fontWeight: '600',
-              cursor: 'pointer',
-              fontSize: '15px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            Table Manager
-          </button>
-          <button
-            onClick={() => handleTabChange('hours')}
-            style={{
-              padding: '12px 20px',
-              border: 0,
-              background: 'transparent',
-              color: activeTab === 'hours' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'hours' ? '2px solid var(--primary)' : '2px solid transparent',
-              fontWeight: '600',
-              cursor: 'pointer',
-              fontSize: '15px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            Operating Hours
-          </button>
-          <button
-            onClick={() => handleTabChange('profile')}
-            style={{
-              padding: '12px 20px',
-              border: 0,
-              background: 'transparent',
-              color: activeTab === 'profile' ? 'var(--primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === 'profile' ? '2px solid var(--primary)' : '2px solid transparent',
-              fontWeight: '600',
-              cursor: 'pointer',
-              fontSize: '15px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            Profile Editor
-          </button>
+          {user?.role === 'CAFE_ADMIN' && (
+            <>
+              <button
+                onClick={() => handleTabChange('tables')}
+                style={{
+                  padding: '12px 20px',
+                  border: 0,
+                  background: 'transparent',
+                  color: activeTab === 'tables' ? 'var(--primary)' : 'var(--text-muted)',
+                  borderBottom: activeTab === 'tables' ? '2px solid var(--primary)' : '2px solid transparent',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Table Manager
+              </button>
+              <button
+                onClick={() => handleTabChange('hours')}
+                style={{
+                  padding: '12px 20px',
+                  border: 0,
+                  background: 'transparent',
+                  color: activeTab === 'hours' ? 'var(--primary)' : 'var(--text-muted)',
+                  borderBottom: activeTab === 'hours' ? '2px solid var(--primary)' : '2px solid transparent',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Operating Hours
+              </button>
+              <button
+                onClick={() => handleTabChange('profile')}
+                style={{
+                  padding: '12px 20px',
+                  border: 0,
+                  background: 'transparent',
+                  color: activeTab === 'profile' ? 'var(--primary)' : 'var(--text-muted)',
+                  borderBottom: activeTab === 'profile' ? '2px solid var(--primary)' : '2px solid transparent',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '15px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Profile Editor
+              </button>
+            </>
+          )}
           <button
             onClick={() => {
               handleTabChange('reservations');
@@ -351,14 +369,38 @@ function CafeDashboardPage() {
           >
             Reservations
           </button>
+          {user?.role === 'CAFE_ADMIN' && (
+            <button
+              onClick={() => {
+                handleTabChange('staff');
+                if (cafe) {
+                  setStaffLoading(true);
+                  getStaffList(cafe.id, token)
+                    .then(setStaffList)
+                    .catch((err) => {
+                      setError(err.response?.data?.error || 'Failed to fetch staff list.');
+                    })
+                    .finally(() => setStaffLoading(false));
+                }
+              }}
+              style={{
+                padding: '12px 20px',
+                border: 0,
+                background: 'transparent',
+                color: activeTab === 'staff' ? 'var(--primary)' : 'var(--text-muted)',
+                borderBottom: activeTab === 'staff' ? '2px solid var(--primary)' : '2px solid transparent',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '15px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Staff Manager
+            </button>
+          )}
         </nav>
 
         {error && <div className="form-error" style={{ marginBottom: '24px' }}>{error}</div>}
-        {successMsg && (
-          <div style={{ padding: '16px', background: 'var(--status-success-subtle)', color: 'var(--status-success-text)', borderRadius: 'var(--radius-md)', border: '1px solid #c8e6c9', marginBottom: '24px', fontSize: '14px', fontWeight: '500' }}>
-            {successMsg}
-          </div>
-        )}
 
         {/* --- 1. TABLES MANAGER TAB --- */}
         {activeTab === 'tables' && (
@@ -882,8 +924,9 @@ function CafeDashboardPage() {
                       setUpdatingId(b.id);
                       const updated = await updateBookingStatus(b.id, newStatus, token);
                       setReservations(prev => prev.map(r => r.id === b.id ? { ...r, ...updated } : r));
+                      toast.success(`Booking successfully marked as ${newStatus.toLowerCase().replace('_', '-')}.`);
                     } catch (err) {
-                      alert(err.response?.data?.error || 'Failed to update status.');
+                      toast.error(err.response?.data?.error || 'Failed to update status.');
                     } finally {
                       setUpdatingId(null);
                     }
@@ -956,6 +999,136 @@ function CafeDashboardPage() {
                           </button>
                         </div>
                       )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+        {/* --- 5. STAFF MANAGER TAB --- */}
+        {activeTab === 'staff' && user?.role === 'CAFE_ADMIN' && (
+          <section>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <h2 style={{ color: 'var(--text-heading)', margin: 0, fontSize: '24px' }}>Staff Accounts</h2>
+                <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0', fontSize: '14px' }}>Manage login accounts for your café staff members.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setStaffForm({ name: '', email: '', password: '' });
+                  setStaffError('');
+                  setShowStaffForm(true);
+                }}
+                style={{
+                  padding: '10px 20px',
+                  color: '#fff',
+                  background: 'var(--primary)',
+                  border: 0,
+                  borderRadius: 'var(--radius-md)',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                + Add Staff Account
+              </button>
+            </div>
+
+            {/* Staff Form Modal */}
+            {showStaffForm && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+                <div style={{ background: '#fff', padding: '28px', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-heading)', margin: 0 }}>Register Staff User</h3>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setStaffError('');
+                    setStaffActionLoading(true);
+                    try {
+                      const newStaff = await addStaffUser(cafe.id, staffForm, token);
+                      setStaffList(prev => [...prev, newStaff]);
+                      toast.success(`Registered staff member: ${newStaff.user.name}`);
+                      setShowStaffForm(false);
+                    } catch (err) {
+                      setStaffError(err.response?.data?.error || 'Failed to register staff.');
+                    } finally {
+                      setStaffActionLoading(false);
+                    }
+                  }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <label htmlFor="staff-name" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-heading)', display: 'block', marginBottom: '6px' }}>Full Name</label>
+                      <input id="staff-name" type="text" required value={staffForm.name} onChange={e => setStaffForm(p => ({ ...p, name: e.target.value }))} style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', fontSize: '14px', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label htmlFor="staff-email" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-heading)', display: 'block', marginBottom: '6px' }}>Email Address</label>
+                      <input id="staff-email" type="email" required value={staffForm.email} onChange={e => setStaffForm(p => ({ ...p, email: e.target.value }))} style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', fontSize: '14px', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label htmlFor="staff-password" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-heading)', display: 'block', marginBottom: '6px' }}>Password</label>
+                      <input id="staff-password" type="password" required minLength={6} value={staffForm.password} onChange={e => setStaffForm(p => ({ ...p, password: e.target.value }))} style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', fontSize: '14px', boxSizing: 'border-box' }} />
+                    </div>
+
+                    {staffError && <p style={{ color: 'var(--status-error)', fontSize: '13px', margin: 0 }}>{staffError}</p>}
+
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                      <button type="button" onClick={() => setShowStaffForm(false)} style={{ padding: '8px 16px', border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-secondary)', borderRadius: 'var(--radius-md)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                      <button type="submit" disabled={staffActionLoading} style={{ padding: '8px 20px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
+                        {staffActionLoading ? 'Registering…' : 'Register'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {staffLoading ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading staff members…</p>
+            ) : staffList.length === 0 ? (
+              <div style={{ padding: '48px 20px', textAlign: 'center', background: 'var(--surface-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-default)' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>No staff members registered yet.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                {staffList.map(s => {
+                  async function handleDeleteStaff() {
+                    if (!window.confirm(`Are you sure you want to remove staff member: ${s.user.name}?`)) return;
+                    try {
+                      await deleteStaffUser(cafe.id, s.id, token);
+                      setStaffList(prev => prev.filter(item => item.id !== s.id));
+                      toast.success(`Removed staff member: ${s.user.name}`);
+                    } catch (err) {
+                      toast.error(err.response?.data?.error || 'Failed to remove staff.');
+                    }
+                  }
+
+                  return (
+                    <div key={s.id} style={{
+                      background: '#fff',
+                      border: '1px solid var(--border-default)',
+                      borderRadius: 'var(--radius-lg)',
+                      padding: '20px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}>
+                      <div>
+                        <p style={{ fontWeight: '700', color: 'var(--text-heading)', fontSize: '15px', margin: 0 }}>{s.user.name}</p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>{s.user.email}</p>
+                      </div>
+                      <button
+                        onClick={handleDeleteStaff}
+                        style={{
+                          background: 'transparent',
+                          border: '1px solid var(--status-error)',
+                          color: 'var(--status-error)',
+                          padding: '6px 12px',
+                          borderRadius: 'var(--radius-md)',
+                          fontWeight: '600',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Remove
+                      </button>
                     </div>
                   );
                 })}

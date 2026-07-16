@@ -5,6 +5,7 @@ const { requireRole } = require('../middleware/role.middleware');
 const { cafeUpload } = require('../middleware/upload.middleware');
 const { register, getOwned, updateProfile, listCafes } = require('../controllers/cafe.controller');
 const { addTable, listTables, editTable, removeTable, setHours } = require('../controllers/table.controller');
+const { registerStaff, listStaff, removeStaff } = require('../controllers/staff.controller');
 
 const router = express.Router();
 
@@ -68,6 +69,28 @@ router.patch(
   asyncHandler(authMiddleware),
   requireRole('CAFE_ADMIN'),
   asyncHandler(setHours)
+);
+
+// Staff management routes
+router.post(
+  '/:id/staff',
+  asyncHandler(authMiddleware),
+  requireRole('CAFE_ADMIN'),
+  asyncHandler(registerStaff)
+);
+
+router.get(
+  '/:id/staff',
+  asyncHandler(authMiddleware),
+  requireRole('CAFE_ADMIN'),
+  asyncHandler(listStaff)
+);
+
+router.delete(
+  '/:id/staff/:staffId',
+  asyncHandler(authMiddleware),
+  requireRole('CAFE_ADMIN'),
+  asyncHandler(removeStaff)
 );
 
 module.exports = router;

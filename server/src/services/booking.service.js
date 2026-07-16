@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const { AppError } = require('../utils/errors');
+const { emitTableHeld, emitTableConfirmed, emitTableAvailable } = require('../lib/socket');
 
 const DAYS_OF_WEEK = [
   'monday',
@@ -98,6 +99,9 @@ async function createBookingHold(userId, data) {
 
     return booking;
   });
+
+  emitTableHeld(booking.cafeId, booking.tableId);
+  return booking;
 }
 
 async function confirmBooking(bookingId, userId) {
@@ -125,13 +129,16 @@ async function confirmBooking(bookingId, userId) {
     throw new AppError('Booking hold has expired.', 400, 'HOLD_EXPIRED');
   }
 
-  return await prisma.booking.update({
+  const updated = await prisma.booking.update({
     where: { id: bookingId },
     data: {
       status: 'CONFIRMED',
       holdExpiresAt: null,
     },
   });
+
+  emitTableConfirmed(updated.cafeId, updated.tableId);
+  return updated;
 }
 
 async function getCustomerBookings(userId) {
@@ -156,6 +163,7 @@ async function getCustomerBookings(userId) {
           zone: true,
         },
       },
+      review: true,
     },
     orderBy: {
       bookingDate: 'desc',
@@ -196,13 +204,16 @@ async function cancelBookingHold(bookingId, userId) {
     throw new AppError('Cannot cancel booking within 20 minutes of start time.', 403, 'CANCELLATION_WINDOW_CLOSED');
   }
 
-  return await prisma.booking.update({
+  const updated = await prisma.booking.update({
     where: { id: bookingId },
     data: {
       status: 'CANCELLED',
       cancelledAt: new Date(),
     },
   });
+
+  emitTableAvailable(updated.cafeId, updated.tableId);
+  return updated;
 }
 
 async function getCafeBookings(cafeId, ownerId) {

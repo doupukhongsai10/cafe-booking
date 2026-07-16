@@ -71,3 +71,14 @@ button { cursor: pointer; }
   .home-page { padding: var(--space-4); }
   .home-card { margin-top: var(--space-12); padding: var(--space-6); }
 }
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

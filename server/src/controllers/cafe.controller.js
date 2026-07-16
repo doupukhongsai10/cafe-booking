@@ -1,5 +1,5 @@
 const { registerCafeSchema, rejectCafeSchema, updateCafeProfileSchema } = require('../validators/cafe.validators');
-const { createCafe, getPendingCafes, updateCafeStatus, getCafeByOwnerId, updateCafeProfile, listApprovedCafes } = require('../services/cafe.service');
+const { createCafe, getPendingCafes, updateCafeStatus, getCafeByOwnerId, updateCafeProfile, listApprovedCafes, getCafeByStaffUserId } = require('../services/cafe.service');
 const { uploadImageBuffer } = require('../lib/cloudinary');
 const { AppError } = require('../utils/errors');
 
@@ -51,7 +51,12 @@ async function reject(req, res) {
 }
 
 async function getOwned(req, res) {
-  const cafe = await getCafeByOwnerId(req.user.id);
+  let cafe;
+  if (req.user.role === 'CAFE_STAFF') {
+    cafe = await getCafeByStaffUserId(req.user.id);
+  } else {
+    cafe = await getCafeByOwnerId(req.user.id);
+  }
   return res.status(200).json({ data: { cafe } });
 }
 

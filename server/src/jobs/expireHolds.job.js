@@ -18,6 +18,8 @@ function initExpireHoldsJob() {
         },
         select: {
           id: true,
+          cafeId: true,
+          tableId: true,
         },
       });
 
@@ -38,7 +40,11 @@ function initExpireHoldsJob() {
 
         logger.info(`Expired holds job: cancelled ${updateResult.count} stale holds.`, { expiredIds });
 
-        // Note: Socket.io emitter table:available will be triggered here in Phase 5 (Unit 20).
+        // Emit Socket.io emitter table:available for each released slot
+        const { emitTableAvailable } = require('../lib/socket');
+        for (const hold of expiredHolds) {
+          emitTableAvailable(hold.cafeId, hold.tableId);
+        }
       }
     } catch (error) {
       logger.error('Expired holds job encountered an error', {

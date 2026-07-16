@@ -123,6 +123,14 @@ async function listApprovedCafes() {
   });
 }
 
+async function getCafeByStaffUserId(userId) {
+  const staffRecord = await prisma.cafeStaff.findFirst({
+    where: { userId },
+  });
+  if (!staffRecord) return null;
+  return await getCafeById(staffRecord.cafeId);
+}
+
 module.exports = {
   createCafe,
   getPendingCafes,
@@ -131,4 +139,5 @@ module.exports = {
   getCafeByOwnerId,
   updateCafeProfile,
   listApprovedCafes,
+  getCafeByStaffUserId,
 };

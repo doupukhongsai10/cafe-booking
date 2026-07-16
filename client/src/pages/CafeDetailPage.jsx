@@ -1,8 +1,11 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
 import { listCafes } from '../services/cafe.service';
 import { placeHold, confirmHold } from '../services/booking.service';
+import { useToast } from '../store/ToastContext';
+import { getCafeReviews } from '../services/review.service';
+import { useSocket } from '../hooks/useSocket';
 
 const ZONE_LABELS = { INDOOR: 'Indoor', OUTDOOR: 'Outdoor', ROOFTOP: 'Rooftop', PRIVATE: 'Private' };
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -21,6 +24,7 @@ function CafeDetailPage() {
   const { id } = useParams();
   const { token } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [cafe, setCafe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +44,44 @@ function CafeDetailPage() {
   const [confirming, setConfirming] = useState(false);
   const timerRef = useRef(null);
 
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  // Real-time held tables tracking
+  const [realTimeHeldTableIds, setRealTimeHeldTableIds] = useState(new Set());
+
+  // Listeners for Socket.io events
+  const socketListeners = useMemo(() => ({
+    'table:held': (data) => {
+      setRealTimeHeldTableIds(prev => {
+        const next = new Set(prev);
+        next.add(data.tableId);
+        return next;
+      });
+    },
+    'table:confirmed': (data) => {
+      setRealTimeHeldTableIds(prev => {
+        const next = new Set(prev);
+        next.add(data.tableId);
+        return next;
+      });
+    },
+    'table:available': (data) => {
+      setRealTimeHeldTableIds(prev => {
+        const next = new Set(prev);
+        next.delete(data.tableId);
+        return next;
+      });
+      if (selectedTable?.id === data.tableId) {
+        toast.success('Your selected table is now available!');
+      }
+    }
+  }), [selectedTable, toast]);
+
+  // Hook up socket
+  useSocket(id, socketListeners);
+
   useEffect(() => {
     // We use listCafes (which is already built) to get cafe with tables included
     listCafes()
@@ -50,6 +92,13 @@ function CafeDetailPage() {
       })
       .catch(() => navigate('/cafes'))
       .finally(() => setLoading(false));
+
+    // Fetch reviews
+    setReviewsLoading(true);
+    getCafeReviews(id)
+      .then(setReviews)
+      .catch(() => {})
+      .finally(() => setReviewsLoading(false));
   }, [id]);
 
   // Countdown ticker
@@ -64,6 +113,7 @@ function CafeDetailPage() {
         clearInterval(timerRef.current);
         setHold(null);
         setFormError('Your hold has expired. Please try again.');
+        toast.error('Booking hold expired.');
       }
     }, 500);
 
@@ -78,6 +128,20 @@ function CafeDetailPage() {
     if (!startTime || !endTime) { setFormError('Please fill in start and end times.'); return; }
     if (startTime >= endTime) { setFormError('Start time must be before end time.'); return; }
 
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (bookingDate === todayStr) {
+      const now = new Date();
+      const currentHrs = now.getHours();
+      const currentMins = now.getMinutes();
+      const [startHrs, startMins] = startTime.split(':').map(Number);
+      if (startHrs < currentHrs || (startHrs === currentHrs && startMins <= currentMins)) {
+        const errorMsg = 'Start time must be in the future for today\'s booking.';
+        setFormError(errorMsg);
+        toast.error(errorMsg);
+        return;
+      }
+    }
+
     try {
       setSubmitting(true);
       const booking = await placeHold({
@@ -89,8 +153,11 @@ function CafeDetailPage() {
       }, token);
       setHold(booking);
       setCountdown(new Date(booking.holdExpiresAt).getTime() - Date.now());
+      toast.info('Table held! Please confirm within 5 minutes.');
     } catch (err) {
-      setFormError(err.response?.data?.error || 'Failed to place hold. Please try again.');
+      const msg = err.response?.data?.error || 'Failed to place hold. Please try again.';
+      setFormError(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +171,9 @@ function CafeDetailPage() {
       clearInterval(timerRef.current);
       navigate('/', { state: { confirmed: true } });
     } catch (err) {
-      setFormError(err.response?.data?.error || 'Failed to confirm booking.');
+      const msg = err.response?.data?.error || 'Failed to confirm booking.';
+      setFormError(msg);
+      toast.error(msg);
       setConfirming(false);
     }
   }
@@ -227,20 +296,41 @@ function CafeDetailPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px', marginBottom: '28px' }}>
                   {(cafe.tables || []).map(table => {
                     const isSelected = selectedTable?.id === table.id;
+                    const isRealTimeUnavailable = realTimeHeldTableIds.has(table.id);
                     return (
                       <div
                         key={table.id}
-                        onClick={() => setSelectedTable(table)}
+                        onClick={() => {
+                          if (isRealTimeUnavailable) {
+                            toast.error('This table is currently held or booked by another customer.');
+                            return;
+                          }
+                          setSelectedTable(table);
+                        }}
                         style={{
                           padding: '14px',
                           borderRadius: 'var(--radius-md)',
                           border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--border-default)'}`,
-                          background: isSelected ? 'rgba(var(--primary-rgb, 98, 0, 234), 0.05)' : 'var(--surface-primary)',
-                          cursor: 'pointer',
-                          transition: 'border-color 0.15s',
+                          background: isRealTimeUnavailable
+                            ? '#f5f5f5'
+                            : isSelected
+                            ? 'rgba(var(--primary-rgb, 98, 0, 234), 0.05)'
+                            : 'var(--surface-primary)',
+                          cursor: isRealTimeUnavailable ? 'not-allowed' : 'pointer',
+                          opacity: isRealTimeUnavailable ? 0.6 : 1,
+                          transition: 'all 0.15s',
                         }}
                       >
-                        <p style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-heading)', margin: '0 0 4px' }}>{table.name}</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <p style={{ fontWeight: '700', fontSize: '14px', color: isRealTimeUnavailable ? 'var(--text-muted)' : 'var(--text-heading)', margin: '0 0 4px' }}>
+                            {table.name}
+                          </p>
+                          {isRealTimeUnavailable && (
+                            <span style={{ fontSize: '10px', background: '#ffe082', color: '#e65100', padding: '2px 6px', borderRadius: 'var(--radius-full)', fontWeight: '700' }}>
+                              HELD/BOOKED
+                            </span>
+                          )}
+                        </div>
                         <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
                           {ZONE_LABELS[table.zone] || table.zone} · Up to {table.capacity} guests
                         </p>
@@ -322,6 +412,55 @@ function CafeDetailPage() {
               )}
             </>
           )}
+
+          {/* Reviews Section */}
+          <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid var(--border-default)' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '6px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-heading)', margin: 0 }}>
+                Reviews & Ratings
+              </h2>
+              <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                ★ {cafe.averageRating ? cafe.averageRating.toFixed(1) : '0.0'} ({cafe.totalReviews || 0} reviews)
+              </span>
+            </div>
+
+            {reviewsLoading ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Loading reviews…</p>
+            ) : reviews.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic', margin: '12px 0 0' }}>
+                No reviews yet for this café. Be the first to leave a review after your completed reservation!
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+                {reviews.map(r => (
+                  <div key={r.id} style={{
+                    padding: '16px',
+                    background: '#fff',
+                    border: '1px solid var(--border-default)',
+                    borderRadius: 'var(--radius-md)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ fontWeight: '700', color: 'var(--text-heading)' }}>
+                        {r.customer?.name}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        {new Date(r.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+                      </span>
+                    </div>
+                    <div style={{ color: 'var(--secondary)', fontSize: '14px', fontWeight: 'bold' }}>
+                      {'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}
+                    </div>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                      {r.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </main>

@@ -126,12 +126,27 @@ function HomePage() {
 
                 {cafe.status === 'APPROVED' && (
                   <div>
-                    <div style={{ display: 'inline-block', background: '#e8f5e9', color: '#1b5e20', padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '13px', fontWeight: '600', marginBottom: '14px' }}>
+                    <div style={{ display: 'inline-block', background: '#e8f5e9', color: '#1b5e20', padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}>
                       APPROVED & LIVE
                     </div>
-                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
-                      Congratulations! Your café is live on the platform. The dashboard to manage tables and bookings will be available in the next build unit.
+                    <p style={{ margin: '0 0 20px', color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+                      Congratulations! Your café is live on the platform. You can now manage your tables inventory and operating hours.
                     </p>
+                    <button
+                      onClick={() => navigate('/dashboard')}
+                      style={{
+                        padding: '10px 20px',
+                        color: '#fff',
+                        background: 'var(--primary)',
+                        border: '0',
+                        borderRadius: 'var(--radius-md)',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Go to Cafe Dashboard
+                    </button>
                   </div>
                 )}
 

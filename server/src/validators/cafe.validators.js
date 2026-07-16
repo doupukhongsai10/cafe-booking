@@ -34,4 +34,14 @@ const rejectCafeSchema = z.object({
   reason: z.string().min(5, 'Rejection reason must be at least 5 characters long.'),
 });
 
-module.exports = { registerCafeSchema, rejectCafeSchema };
+const updateCafeProfileSchema = z.object({
+  name: z.string().min(1, 'Café name is required.').optional(),
+  description: z.string().min(10, 'Description must be at least 10 characters long.').optional(),
+  location: z.string().min(1, 'Location address is required.').optional(),
+  city: z.string().min(1, 'City is required.').optional(),
+  area: z.string().min(1, 'Area is required.').optional(),
+  latitude: z.preprocess((val) => parseFloat(val), z.number().min(-90).max(90)).optional(),
+  longitude: z.preprocess((val) => parseFloat(val), z.number().min(-180).max(180)).optional(),
+});
+
+module.exports = { registerCafeSchema, rejectCafeSchema, updateCafeProfileSchema };

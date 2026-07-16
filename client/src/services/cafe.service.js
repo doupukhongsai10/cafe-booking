@@ -51,3 +51,38 @@ export async function rejectCafe(id, reason, token) {
   );
   return response.data.data.cafe;
 }
+
+export async function updateCafeProfile(id, formData, token) {
+  const response = await cafeClient.patch(`/cafes/${id}`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data.data.cafe;
+}
+
+export async function getTables(cafeId, token) {
+  const response = await cafeClient.get(`/cafes/${cafeId}/tables`, getHeaders(token));
+  return response.data.data.tables;
+}
+
+export async function createTable(cafeId, tableData, token) {
+  const response = await cafeClient.post(`/cafes/${cafeId}/tables`, tableData, getHeaders(token));
+  return response.data.data.table;
+}
+
+export async function updateTable(cafeId, tableId, tableData, token) {
+  const response = await cafeClient.patch(`/cafes/${cafeId}/tables/${tableId}`, tableData, getHeaders(token));
+  return response.data.data.table;
+}
+
+export async function deleteTable(cafeId, tableId, token) {
+  const response = await cafeClient.delete(`/cafes/${cafeId}/tables/${tableId}`, getHeaders(token));
+  return response.data.data;
+}
+
+export async function updateOperatingHours(cafeId, hoursData, token) {
+  const response = await cafeClient.patch(`/cafes/${cafeId}/hours`, hoursData, getHeaders(token));
+  return response.data.data.cafe;
+}

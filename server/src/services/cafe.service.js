@@ -90,10 +90,24 @@ async function getCafeByOwnerId(ownerId) {
   });
 }
 
+async function updateCafeProfile(id, ownerId, data) {
+  const cafe = await getCafeById(id);
+
+  if (cafe.ownerId !== ownerId) {
+    throw new AppError('Forbidden: You do not own this café.', 403, 'FORBIDDEN');
+  }
+
+  return await prisma.cafe.update({
+    where: { id },
+    data,
+  });
+}
+
 module.exports = {
   createCafe,
   getPendingCafes,
   getCafeById,
   updateCafeStatus,
   getCafeByOwnerId,
+  updateCafeProfile,
 };

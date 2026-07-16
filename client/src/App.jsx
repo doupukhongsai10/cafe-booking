@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CafeOnboardingPage from './pages/CafeOnboardingPage';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import CafeDashboardPage from './pages/CafeDashboardPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -56,6 +57,14 @@ function App() {
         element={(
           <RoleProtectedRoute allowedRoles={['SUPER_ADMIN']}>
             <SuperAdminDashboard />
+          </RoleProtectedRoute>
+        )}
+      />
+      <Route
+        path="/dashboard"
+        element={(
+          <RoleProtectedRoute allowedRoles={['CAFE_ADMIN', 'CAFE_STAFF']}>
+            <CafeDashboardPage />
           </RoleProtectedRoute>
         )}
       />

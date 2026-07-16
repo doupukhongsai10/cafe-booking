@@ -1,5 +1,5 @@
-const { registerCafeSchema, rejectCafeSchema } = require('../validators/cafe.validators');
-const { createCafe, getPendingCafes, updateCafeStatus, getCafeByOwnerId } = require('../services/cafe.service');
+const { registerCafeSchema, rejectCafeSchema, updateCafeProfileSchema } = require('../validators/cafe.validators');
+const { createCafe, getPendingCafes, updateCafeStatus, getCafeByOwnerId, updateCafeProfile } = require('../services/cafe.service');
 const { uploadImageBuffer } = require('../lib/cloudinary');
 const { AppError } = require('../utils/errors');
 
@@ -55,10 +55,35 @@ async function getOwned(req, res) {
   return res.status(200).json({ data: { cafe } });
 }
 
+async function updateProfile(req, res) {
+  const { id } = req.params;
+  const payload = updateCafeProfileSchema.parse(req.body);
+
+  const coverPhotoFile = req.files && req.files['coverPhoto'] ? req.files['coverPhoto'][0] : null;
+  const photosFiles = req.files && req.files['photos'] ? req.files['photos'] : [];
+
+  if (coverPhotoFile) {
+    payload.coverPhotoUrl = await uploadImageBuffer(coverPhotoFile.buffer, 'cafe-cover');
+  }
+
+  if (photosFiles.length > 0) {
+    const photos = [];
+    for (const file of photosFiles) {
+      const url = await uploadImageBuffer(file.buffer, 'cafe-gallery');
+      photos.push(url);
+    }
+    payload.photos = photos;
+  }
+
+  const cafe = await updateCafeProfile(id, req.user.id, payload);
+  return res.status(200).json({ data: { cafe } });
+}
+
 module.exports = {
   register,
   listPending,
   approve,
   reject,
   getOwned,
+  updateProfile,
 };

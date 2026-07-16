@@ -3,7 +3,7 @@ const { asyncHandler } = require('../middleware/asyncHandler');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/role.middleware');
 const { cafeUpload } = require('../middleware/upload.middleware');
-const { register, getOwned } = require('../controllers/cafe.controller');
+const { register, getOwned, updateProfile } = require('../controllers/cafe.controller');
 const { addTable, listTables, editTable, removeTable, setHours } = require('../controllers/table.controller');
 
 const router = express.Router();
@@ -14,6 +14,14 @@ router.post(
   requireRole('CAFE_ADMIN'),
   cafeUpload,
   asyncHandler(register)
+);
+
+router.patch(
+  '/:id',
+  asyncHandler(authMiddleware),
+  requireRole('CAFE_ADMIN'),
+  cafeUpload,
+  asyncHandler(updateProfile)
 );
 
 router.get(

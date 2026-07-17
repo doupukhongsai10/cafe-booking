@@ -217,13 +217,21 @@ async function cancelBookingHold(bookingId, userId) {
 }
 
 async function getCafeBookings(cafeId, ownerId) {
-  // Tenancy check: verify the caller owns this café
   const cafe = await prisma.cafe.findUnique({ where: { id: cafeId } });
   if (!cafe) {
     throw new AppError('Café not found.', 404, 'CAFE_NOT_FOUND');
   }
-  if (cafe.ownerId !== ownerId) {
-    throw new AppError('Forbidden: You do not own this café.', 403, 'FORBIDDEN');
+
+  const isOwner = cafe.ownerId === ownerId;
+  const isStaff = await prisma.cafeStaff.findFirst({
+    where: {
+      cafeId,
+      userId: ownerId,
+    },
+  });
+
+  if (!isOwner && !isStaff) {
+    throw new AppError('Forbidden: You do not have permissions to access bookings for this café.', 403, 'FORBIDDEN');
   }
 
   return await prisma.booking.findMany({
@@ -261,9 +269,17 @@ async function updateBookingStatus(bookingId, ownerId, newStatus) {
     throw new AppError('Booking not found.', 404, 'BOOKING_NOT_FOUND');
   }
 
-  // Tenancy check
-  if (booking.cafe.ownerId !== ownerId) {
-    throw new AppError('Forbidden: You do not own the café for this booking.', 403, 'FORBIDDEN');
+  // Tenancy check: verify the user is either the cafe owner OR a staff member of the cafe
+  const isOwner = booking.cafe.ownerId === ownerId;
+  const isStaff = await prisma.cafeStaff.findFirst({
+    where: {
+      cafeId: booking.cafeId,
+      userId: ownerId,
+    },
+  });
+
+  if (!isOwner && !isStaff) {
+    throw new AppError('Forbidden: You do not have permissions to manage bookings for this café.', 403, 'FORBIDDEN');
   }
 
   // Only CONFIRMED bookings can transition to COMPLETED or NO_SHOW

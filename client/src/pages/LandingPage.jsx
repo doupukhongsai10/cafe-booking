@@ -54,11 +54,6 @@ function LandingPage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      toast.info('Please log in or register to search and book tables!');
-      navigate('/login');
-      return;
-    }
     const params = new URLSearchParams();
     if (searchCity) params.append('city', searchCity);
     if (partySize) params.append('partySize', partySize);
@@ -67,12 +62,7 @@ function LandingPage() {
   };
 
   const handleActionClick = (destination) => {
-    if (!isAuthenticated) {
-      toast.info('Please log in or register to access this page.');
-      navigate('/login');
-    } else {
-      navigate(destination);
-    }
+    navigate(destination);
   };
 
   const handleToastFeature = (featureName) => {

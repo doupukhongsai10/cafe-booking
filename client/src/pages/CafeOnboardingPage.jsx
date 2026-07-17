@@ -102,7 +102,10 @@ function CafeOnboardingPage() {
   return (
     <main className="home-page">
       <header className="home-header">
-        <span className="brand" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>CafeReserve</span>
+        <span className="brand flex items-center gap-2" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+          <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>home</span>
+          <span>CafeReserve</span>
+        </span>
         <button className="button-secondary" type="button" onClick={() => logout()}>Sign out</button>
       </header>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
 import { getOwnedCafe } from '../services/cafe.service';
 import { getMyBookings, cancelBooking } from '../services/booking.service';
@@ -101,7 +101,10 @@ function HomePage() {
   return (
     <main className="home-page">
       <header className="home-header">
-        <span className="brand">CafeReserve</span>
+        <Link to="/" className="brand flex items-center gap-2 hover:opacity-85" style={{ textDecoration: 'none' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>home</span>
+          <span>CafeReserve</span>
+        </Link>
         <button className="button-secondary" type="button" onClick={handleLogout}>Sign out</button>
       </header>
 

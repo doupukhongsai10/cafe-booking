@@ -263,7 +263,10 @@ function CafeDashboardPage() {
     return (
       <main className="home-page">
         <header className="home-header">
-          <span className="brand">CafeReserve</span>
+          <span className="brand flex items-center gap-2" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>home</span>
+            <span>CafeReserve</span>
+          </span>
         </header>
         <section style={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}>
           <p style={{ color: 'var(--text-secondary)' }}>Loading café workspace...</p>
@@ -276,7 +279,10 @@ function CafeDashboardPage() {
     <main className="home-page">
       <header className="home-header" style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg-overlay)', backdropFilter: 'blur(var(--bg-overlay-blur))', borderBottom: '1px solid var(--border-subtle)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span className="brand" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>CafeReserve</span>
+          <span className="brand flex items-center gap-2" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+            <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>home</span>
+            <span>CafeReserve</span>
+          </span>
           <span style={{ fontSize: '13px', background: 'var(--primary-subtle)', color: 'var(--primary-subtle-text)', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Workspace
           </span>

@@ -41,8 +41,9 @@ function CafeDiscoveryPage() {
       <nav className="bg-white/80 backdrop-blur-xl sticky top-0 border-b border-outline-variant/30 shadow-sm z-50 transition-all duration-300">
         <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto z-50">
           <div className="flex items-center gap-gutter">
-            <Link to="/" className="font-bold text-title-lg text-primary tracking-tight">
-              CafeReserve
+            <Link to="/" className="flex items-center gap-2 font-bold text-title-lg text-primary tracking-tight hover:opacity-85">
+              <span className="material-symbols-outlined text-xl">home</span>
+              <span>CafeReserve</span>
             </Link>
           </div>
           <div className="hidden md:flex items-center gap-6">

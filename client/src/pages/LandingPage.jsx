@@ -85,9 +85,9 @@ function LandingPage() {
       <header className="bg-white/80 backdrop-blur-xl sticky top-0 border-b border-outline-variant/30 shadow-sm z-50">
         <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
           <div className="flex items-center gap-gutter">
-            <Link to="/" className="font-bold text-display-lg-mobile md:text-display-lg text-primary tracking-tight">
+            <a class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg font-bold text-primary dark:text-primary-fixed" href="#">
               CafeReserve
-            </Link>
+            </a>
             <nav className="hidden md:flex gap-6 ml-8">
               <button
                 onClick={() => handleActionClick('/cafes')}

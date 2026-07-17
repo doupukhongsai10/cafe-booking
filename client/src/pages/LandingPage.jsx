@@ -265,7 +265,7 @@ function LandingPage() {
                     Artisan sourdough, poached farm eggs, and our signature avocado mash. A morning ritual redefined.
                   </p>
                   <div className="flex justify-between items-center border-t border-outline-variant/30 pt-4">
-                    <span className="text-lg font-bold text-primary">Rs.40.00</span>
+                    <span className="text-lg font-bold text-primary">Rs.40</span>
                     <button
                       onClick={() => handleActionClick('/cafes')}
                       className="text-secondary font-semibold hover:underline flex items-center gap-1 text-sm"

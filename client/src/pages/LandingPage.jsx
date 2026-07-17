@@ -1,19 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
+
+const SLIDES = [
+  {
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAD09-EP2Stj-1kddMgrsEJBTTiHknH2SNgJRD3XJKFDpyYeUlj28fBRkFydA_j57XvRFYp-gMMunF0F2mNpqoU5kR9rnZcuLgqekJDfLBIZ5V1v0GP6XVngMsh-D36lbW4cGjrgdykRjgZB0InOacYOTHEPipIOEgoBS9XHSfK-kMQAl8i4EwNNYZk6YYBx6vc7htmK_V6R8a2Y7Y81eq_L3-8cJWEmvjO_yYEkgP9M9uBkglrlzR6njaIBZ0YpgZNsmx2XxQI1Og",
+    label: "Morning Brew",
+    alt: "Cozy sun-drenched café morning"
+  },
+  {
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCT_tQhjkUTA9Cjw_cxv-qt4dzRN3x7BofcnyUBYl1rfeEMiUwKItHRbE7gGDRDetvM47M4S9XS43TntJE4sXIQiR7UexNcebNH7gfIXJIjBEWABibP3DX8GZN0bI4JuMXASFPTA4_jAlaDhug-aAcAqJEHZAWaYpystMbrAJ6nRDCRnf6ULssrhM-lRkTc8DGVqixGYKGj5tVTkUJ94oN3TTo6_WM8mR3gauqSMjZTuAjRXV45uHwNIrW9r8HaYaZUh2dxNiGXZjo",
+    label: "Afternoon Oasis",
+    alt: "Vibrant café patio sunny afternoon"
+  },
+  {
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA6I_v9rBKoXSKVvORNSrja5A3bVQyxhO_J_1ikyk7qOmbDBEKhv3zAvovOIU-MeKiA8dl2oOpnd1H0X6xOEGU7L2iaWwki7FjBsbjVwnRSNB3pwE6VVnVjJ2JorvTIOVRjnW3te1Kcy9XM2TVHM-VNpEBYKtHzH95RCGpDDsLzuPjR83EDPye3yFCYbCWrlD4M-Bk6BUpVt9b4y1_T8mZrWhpzkzrotAHyLB5BueLlUqYrdSwPMcaB_SIO-DShSnAaKrz_5jPsMWU",
+    label: "Evening Glow",
+    alt: "Golden hour café interior"
+  },
+  {
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDSFFQwEVr86VW-D8UTIRPY9sKm5puZYFJaYRt3C3PZBWPC7QZFml1Y8kRDT5aGL5DPta2WPaofxKt_tLnfVPa9zHfCka8J115bSEijO22pdVzlJByJlFi6Qt-zDvj4P09SOvVFScMVBD9woxBTpop0Du28dJGWOTrf9qDFB4KS22PXqJ1bX-ojREZO88gIjkyH2lQsPQx1VVyIinXdbKo-2zhivUNdeeWHiv-pmKilW_HNub3Kn-hoDYwEqyqBojudq0ZDqNt7HO0",
+    label: "Nightcap Vibe",
+    alt: "Sophisticated night café interior"
+  },
+  {
+    image: "https://lh3.googleusercontent.com/aida/AP1WRLukAP2OL8GOnXJ5HDhESnu5fghFdFjyIPKluCbqptPdf0eco-hVNfirF6ouJ1oa_3xa2iEVtZePsxxm5KDmNQfY-VYI1YqkiF4qnqa9LiVTC7etmtQglf11FwkpRYmdGPCg-gDbCHzXuUp36_J0PZoOwiFVBCvrEDGqP1AXsiiEAVcDIPTNvlTzozDtCQua1WCJLpWvPMqZZjX17EbiDIyJyCD_1gwffo0DNB-69Zc2XvUvelLw5-KyAVU",
+    label: "Featured Spot",
+    alt: "Modern airy café interior"
+  }
+];
 
 function LandingPage() {
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
 
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [searchCity, setSearchCity] = useState('');
   const [partySize, setPartySize] = useState('2');
   const [bookingDate, setBookingDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
+
+  // Carousel timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -48,8 +85,8 @@ function LandingPage() {
       <header className="bg-white/80 backdrop-blur-xl sticky top-0 border-b border-outline-variant/30 shadow-sm z-50">
         <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
           <div className="flex items-center gap-gutter">
-            <Link to="/" className="font-bold text-3xl md:text-4xl text-primary tracking-tight">
-              CafeReserve
+            <Link to="/" className="font-bold text-display-lg-mobile md:text-title-lg text-primary tracking-tight">
+              Aura Reserve
             </Link>
             <nav className="hidden md:flex gap-6 ml-8">
               <button
@@ -77,7 +114,7 @@ function LandingPage() {
               <>
                 <button
                   onClick={() => navigate('/home')}
-                  className="px-4 py-2 font-semibold text-primary bg-transparent border border-outline rounded-lg hover:bg-surface-container-low transition-colors"
+                  className="px-4 py-2 font-semibold text-primary bg-transparent border border-outline rounded-lg hover:bg-surface-container-low transition-colors animate-pulse"
                 >
                   My Dashboard
                 </button>
@@ -113,17 +150,34 @@ function LandingPage() {
       </header>
 
       <main className="flex-grow">
-        {/* Hero Section */}
+        {/* Hero Section with Dynamic Carousel */}
         <section className="relative w-full h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+          {/* Carousel Background Container */}
           <div className="absolute inset-0 z-0">
-            <img
-              alt="Modern airy cafe interior"
-              className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0Ef9-1Ft7h9qF6FJJaOjmX4vunn95jCr9b5IC9FIvWcuoGVUJz8z1b6CDHI6HIyCvToQLHuRBgLZGzijKP5ck6E8nZynVA4eL7UDY2gQGRlpeZ8odSkKgwm2_x6qbopo0leZsibHVGM6mdHVBRPVRSII_nJTE6V7FloZIwYsvfMi0QZInhtTcLdswu9VtH0CiI2gdJ3ykTsfuiLadePMx8HozdrDT5iqyKso09yXLERfcrjJ6Hmz_hdG8iQCXDgHvtjU13dE4RWU"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-primary/30"></div>
+            {SLIDES.map((slide, idx) => (
+              <div
+                key={idx}
+                className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
+                  idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
+              >
+                <img
+                  alt={slide.alt}
+                  className="w-full h-full object-cover"
+                  src={slide.image}
+                />
+              </div>
+            ))}
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-primary/30 z-20"></div>
           </div>
-          <div className="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col items-center text-center">
+
+          <div className="relative z-30 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col items-center text-center">
+            {/* Time-of-day Badge */}
+            <div className="mb-4 px-4 py-1.5 bg-white/15 backdrop-blur-md border border-white/30 rounded-full text-white font-semibold text-xs tracking-widest transition-all duration-500 uppercase">
+              {SLIDES[currentSlide].label}
+            </div>
+
             <h1 className="text-white text-4xl md:text-6xl font-bold max-w-3xl mb-8 drop-shadow-xl tracking-tight leading-tight">
               Your Perfect Table Awaits.
             </h1>
@@ -389,7 +443,7 @@ function LandingPage() {
                   <span className="material-symbols-outlined fill-current text-sm">star</span>
                 </div>
                 <p className="text-on-surface text-sm italic mb-8 leading-relaxed">
-                  "CafeReserve changed how I spend my weekends. I used to wander around hoping for a seat; now I have a guaranteed spot at the best aesthetic cafes in the city."
+                  "Aura Reserve changed how I spend my weekends. I used to wander around hoping for a seat; now I have a guaranteed spot at the best aesthetic cafes in the city."
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center font-bold text-primary text-sm">
@@ -435,7 +489,7 @@ function LandingPage() {
                   <span className="material-symbols-outlined fill-current text-sm">star</span>
                 </div>
                 <p className="text-on-surface text-sm italic mb-8 leading-relaxed">
-                  "As a remote worker, finding quiet cafes with good Wi-Fi is crucial. CafeReserve filters make it so easy to find my office for the day."
+                  "As a remote worker, finding quiet cafes with good Wi-Fi is crucial. Aura Reserve filters make it so easy to find my office for the day."
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center font-bold text-tertiary text-sm">
@@ -477,7 +531,7 @@ function LandingPage() {
       {/* Footer */}
       <footer className="bg-surface-container-highest w-full py-8 px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto border-t border-outline-variant mt-auto">
         <div className="mb-4 md:mb-0">
-          <span className="text-lg font-bold text-primary">CafeReserve</span>
+          <span className="text-lg font-bold text-primary">Aura Reserve</span>
         </div>
         <nav className="flex flex-wrap justify-center gap-6 mb-4 md:mb-0">
           <button
@@ -506,7 +560,7 @@ function LandingPage() {
           </button>
         </nav>
         <div>
-          <p className="text-xs text-primary/70">© 2026 CafeReserve SaaS Marketplace. All rights reserved.</p>
+          <p className="text-xs text-primary/70">© 2026 Aura Reserve SaaS Marketplace. All rights reserved.</p>
         </div>
       </footer>
     </div>

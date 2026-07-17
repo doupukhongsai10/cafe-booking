@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
+import { listCafes } from '../services/cafe.service';
 
 const SLIDES = [
   {
@@ -43,6 +44,16 @@ function LandingPage() {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
+  const [cafes, setCafes] = useState([]);
+  const [cafesLoading, setCafesLoading] = useState(true);
+
+  // Fetch approved cafes
+  useEffect(() => {
+    listCafes()
+      .then(setCafes)
+      .catch(() => {})
+      .finally(() => setCafesLoading(false));
+  }, []);
 
   // Carousel timer effect
   useEffect(() => {
@@ -257,7 +268,7 @@ function LandingPage() {
                   <div className="flex justify-between items-center border-t border-outline-variant/30 pt-4">
                     <span className="text-lg font-bold text-primary">Rs.40</span>
                     <button
-                      onClick={() => handleActionClick('/cafes')}
+                      onClick={() => navigate(cafes.length > 0 ? `/cafes/${cafes[0].id}` : '/cafes')}
                       className="text-secondary font-semibold hover:underline flex items-center gap-1 text-sm"
                     >
                       View Details <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -284,7 +295,7 @@ function LandingPage() {
                   <div className="flex justify-between items-center border-t border-outline-variant/30 pt-4">
                     <span className="text-lg font-bold text-primary">Rs.30</span>
                     <button
-                      onClick={() => handleActionClick('/cafes')}
+                      onClick={() => navigate(cafes.length > 0 ? `/cafes/${cafes[0].id}` : '/cafes')}
                       className="text-secondary font-semibold hover:underline flex items-center gap-1 text-sm"
                     >
                       View Details <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -312,105 +323,140 @@ function LandingPage() {
               </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Cafe Card 1 */}
-              <div className="group bg-background rounded-2xl overflow-hidden border border-outline-variant/30 hover:shadow-lg transition-all duration-300">
-                <div className="relative h-64 overflow-hidden">
-                  <img
-                    alt="Cafe Aura"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyvw475JFZ86c-L3UMcoxEJU0sNxhPemw-QLBP8a5IIbwgNZre-gMAiggYvSAHjdKRKsRh7a5KoLMEIujfyzBIWrk2F5dzcUQzetUAIvommlNYGDITEY2eQbJNt8UztNxVUIcVBSLjlxiD2JobDA68OhAh3wFL_AZ7BxEqiujVu-1zPtquWNcOTMlAnOhfH7opLr1QCrrpmgpjRdP2njEVFfS_jvH-tOdHiQ3tHEEwFnpk8QQHew3WwfnI6JjkXWkg3FPiyCiY9S0"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                      Top Rated
-                    </span>
-                  </div>
-                  <button className="absolute top-4 right-4 bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-white hover:text-primary transition-all">
-                    <span className="material-symbols-outlined leading-none text-base">favorite</span>
-                  </button>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="text-lg font-bold text-primary">Cafe Aura</h4>
-                    <div className="flex items-center text-secondary">
-                      <span className="material-symbols-outlined text-base fill-current">star</span>
-                      <span className="font-bold ml-1 text-sm">4.9</span>
+              {!cafesLoading && cafes.length > 0 ? (
+                cafes.slice(0, 3).map((cafe, index) => (
+                  <div
+                    key={cafe.id}
+                    onClick={() => navigate(`/cafes/${cafe.id}`)}
+                    className="group bg-background rounded-2xl overflow-hidden border border-outline-variant/30 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col"
+                  >
+                    <div className="relative h-64 overflow-hidden bg-neutral-100 shrink-0">
+                      <img
+                        alt={cafe.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        src={cafe.coverPhotoUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnDEwkbxKsDN4ldZA8ApQYnV06nI_06xs11TZWEF6aVqzl7YWljVHkz0IyoECCAaI7Fb-H2ikIWrdDlM5LMvQDPDuXEADpj-yXvSDhrBkD5zmzHLXll8Wf_aveZ0H2QxrDX9gfYpmxl82So3ETjn632ld3gRndw64PCaslm3mnx4tQZ4lFW7jT_uSntyxuycjmuh3A-kSYCGBsqaBjtBMmPoIV9_H50QrNrwas79kBWZxFLCKFy9lAQBTMZ8zaQrDdjK88qwo4U28'}
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                          {index === 0 ? 'Top Rated' : index === 1 ? 'Trending' : 'New'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6 flex flex-col flex-grow">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-lg font-bold text-primary group-hover:text-secondary transition-colors">{cafe.name}</h4>
+                        <div className="flex items-center text-secondary">
+                          <span className="material-symbols-outlined text-base fill-current">star</span>
+                          <span className="font-bold ml-1 text-sm">{cafe.averageRating ? cafe.averageRating.toFixed(1) : '0.0'}</span>
+                        </div>
+                      </div>
+                      <p className="text-on-surface-variant text-xs mb-4">📍 {cafe.area}, {cafe.city}</p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/cafes/${cafe.id}`);
+                        }}
+                        className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-container transition-colors text-sm mt-auto active:scale-95 duration-200"
+                      >
+                        Book a Table
+                      </button>
                     </div>
                   </div>
-                  <p className="text-on-surface-variant text-xs mb-4">Minimalist aesthetic • Speciality Roast • Quiet</p>
-                  <button
-                    onClick={() => handleActionClick('/cafes')}
-                    className="w-full py-3 bg-primary-container text-white rounded-xl font-semibold hover:bg-primary transition-colors text-sm"
-                  >
-                    Book a Table
-                  </button>
-                </div>
-              </div>
+                ))
+              ) : (
+                <>
+                  {/* Cafe Card 1 */}
+                  <div className="group bg-background rounded-2xl overflow-hidden border border-outline-variant/30 hover:shadow-lg transition-all duration-300">
+                    <div className="relative h-64 overflow-hidden">
+                      <img
+                        alt="Cafe Aura"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyvw475JFZ86c-L3UMcoxEJU0sNxhPemw-QLBP8a5IIbwgNZre-gMAiggYvSAHjdKRKsRh7a5KoLMEIujfyzBIWrk2F5dzcUQzetUAIvommlNYGDITEY2eQbJNt8UztNxVUIcVBSLjlxiD2JobDA68OhAh3wFL_AZ7BxEqiujVu-1zPtquWNcOTMlAnOhfH7opLr1QCrrpmgpjRdP2njEVFfS_jvH-tOdHiQ3tHEEwFnpk8QQHew3WwfnI6JjkXWkg3FPiyCiY9S0"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                          Top Rated
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-lg font-bold text-primary">Cafe Aura</h4>
+                        <div className="flex items-center text-secondary">
+                          <span className="material-symbols-outlined text-base fill-current">star</span>
+                          <span className="font-bold ml-1 text-sm">4.9</span>
+                        </div>
+                      </div>
+                      <p className="text-on-surface-variant text-xs mb-4">Minimalist aesthetic • Speciality Roast • Quiet</p>
+                      <button
+                        onClick={() => navigate('/cafes')}
+                        className="w-full py-3 bg-primary-container text-white rounded-xl font-semibold hover:bg-primary transition-colors text-sm"
+                      >
+                        Book a Table
+                      </button>
+                    </div>
+                  </div>
 
-              {/* Cafe Card 2 */}
-              <div className="group bg-background rounded-2xl overflow-hidden border border-outline-variant/30 hover:shadow-lg transition-all duration-300">
-                <div className="relative h-64 overflow-hidden">
-                  <img
-                    alt="The Roastary"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwE4iUERoG-qvr_9UpvUewevtl6btI5x808a3jYqyPoc2Ucbp7CNs_plI7UqHBIxEkUZatfIxn6AWsRrHlZv_yfJTg8JKiyfO-7GTwklZ2YEBoBfYe9JjRfdRqvEStEd14nsbbuR1GOBjia6Rnmz-nfwUoTmdfgCxv-UoQb4YMEErWbHxUDHCEwvCtYPbDchwcTI0SGs-FAvRI6nLws2BhcawCScMyd-RUJVWPk8syjZ_DhDG36XxEqt3R_G1SxgOnO6cXfsvshBU"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                      New
-                    </span>
-                  </div>
-                  <button className="absolute top-4 right-4 bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-white hover:text-primary transition-all">
-                    <span className="material-symbols-outlined leading-none text-base">favorite</span>
-                  </button>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="text-lg font-bold text-primary">The Roastary</h4>
-                    <div className="flex items-center text-secondary">
-                      <span className="material-symbols-outlined text-base fill-current">star</span>
-                      <span className="font-bold ml-1 text-sm">4.7</span>
+                  {/* Cafe Card 2 */}
+                  <div className="group bg-background rounded-2xl overflow-hidden border border-outline-variant/30 hover:shadow-lg transition-all duration-300">
+                    <div className="relative h-64 overflow-hidden">
+                      <img
+                        alt="The Roastary"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwE4iUERoG-qvr_9UpvUewevtl6btI5x808a3jYqyPoc2Ucbp7CNs_plI7UqHBIxEkUZatfIxn6AWsRrHlZv_yfJTg8JKiyfO-7GTwklZ2YEBoBfYe9JjRfdRqvEStEd14nsbbuR1GOBjia6Rnmz-nfwUoTmdfgCxv-UoQb4YMEErWbHxUDHCEwvCtYPbDchwcTI0SGs-FAvRI6nLws2BhcawCScMyd-RUJVWPk8syjZ_DhDG36XxEqt3R_G1SxgOnO6cXfsvshBU"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                          New
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-lg font-bold text-primary">The Roastary</h4>
+                        <div className="flex items-center text-secondary">
+                          <span className="material-symbols-outlined text-base fill-current">star</span>
+                          <span className="font-bold ml-1 text-sm">4.7</span>
+                        </div>
+                      </div>
+                      <p className="text-on-surface-variant text-xs mb-4">Industrial loft • Live Music • Brunch</p>
+                      <button
+                        onClick={() => navigate('/cafes')}
+                        className="w-full py-3 bg-primary-container text-white rounded-xl font-semibold hover:bg-primary transition-colors text-sm"
+                      >
+                        Book a Table
+                      </button>
                     </div>
                   </div>
-                  <p className="text-on-surface-variant text-xs mb-4">Industrial loft • Live Music • Brunch</p>
-                  <button
-                    onClick={() => handleActionClick('/cafes')}
-                    className="w-full py-3 bg-primary-container text-white rounded-xl font-semibold hover:bg-primary transition-colors text-sm"
-                  >
-                    Book a Table
-                  </button>
-                </div>
-              </div>
 
-              {/* Cafe Card 3 */}
-              <div className="group bg-background rounded-2xl overflow-hidden border border-outline-variant/30 hover:shadow-lg transition-all duration-300">
-                <div className="relative h-64 overflow-hidden">
-                  <img
-                    alt="Botanic Brews"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjGIinJdY4HRLnBwRS36g-_tMjmJFb4VLgFpvTGNnGe31A-lYfhaairmdr_5JuKUCI2J-lQ0-lxKaDqz4VvvYum0w1StjJMm6fyF3MHZnpWAK1O1GLY2icltb0rkWtT881iY61qVDE0lN9xC_raYu0P2o50AxTzODpj8rl7ceTsUJE9722Tsfr0ls0C6PMLesX43mHuFe5C1JYZyOwQtY1fS3aV5PKa1KF_Zb_-qGMzxZ7x9_s2pF8-XCtJ1Jmr8dzYThkCE1Zj8Q"
-                  />
-                  <button className="absolute top-4 right-4 bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-white hover:text-primary transition-all">
-                    <span className="material-symbols-outlined leading-none text-base">favorite</span>
-                  </button>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="text-lg font-bold text-primary">Botanic Brews</h4>
-                    <div className="flex items-center text-secondary">
-                      <span className="material-symbols-outlined text-base fill-current">star</span>
-                      <span className="font-bold ml-1 text-sm">4.8</span>
+                  {/* Cafe Card 3 */}
+                  <div className="group bg-background rounded-2xl overflow-hidden border border-outline-variant/30 hover:shadow-lg transition-all duration-300">
+                    <div className="relative h-64 overflow-hidden">
+                      <img
+                        alt="Botanic Brews"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjGIinJdY4HRLnBwRS36g-_tMjmJFb4VLgFpvTGNnGe31A-lYfhaairmdr_5JuKUCI2J-lQ0-lxKaDqz4VvvYum0w1StjJMm6fyF3MHZnpWAK1O1GLY2icltb0rkWtT881iY61qVDE0lN9xC_raYu0P2o50AxTzODpj8rl7ceTsUJE9722Tsfr0ls0C6PMLesX43mHuFe5C1JYZyOwQtY1fS3aV5PKa1KF_Zb_-qGMzxZ7x9_s2pF8-XCtJ1Jmr8dzYThkCE1Zj8Q"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-lg font-bold text-primary">Botanic Brews</h4>
+                        <div className="flex items-center text-secondary">
+                          <span className="material-symbols-outlined text-base fill-current">star</span>
+                          <span className="font-bold ml-1 text-sm">4.8</span>
+                        </div>
+                      </div>
+                      <p className="text-on-surface-variant text-xs mb-4">Garden patio • Vegan Friendly • Pet Friendly</p>
+                      <button
+                        onClick={() => navigate('/cafes')}
+                        className="w-full py-3 bg-primary-container text-white rounded-xl font-semibold hover:bg-primary transition-colors text-sm"
+                      >
+                        Book a Table
+                      </button>
                     </div>
                   </div>
-                  <p className="text-on-surface-variant text-xs mb-4">Garden patio • Vegan Friendly • Pet Friendly</p>
-                  <button
-                    onClick={() => handleActionClick('/cafes')}
-                    className="w-full py-3 bg-primary-container text-white rounded-xl font-semibold hover:bg-primary transition-colors text-sm"
-                  >
-                    Book a Table
-                  </button>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </div>
         </section>

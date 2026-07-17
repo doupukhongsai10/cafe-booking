@@ -85,7 +85,7 @@ function LandingPage() {
       <header className="bg-white/80 backdrop-blur-xl sticky top-0 border-b border-outline-variant/30 shadow-sm z-50">
         <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
           <div className="flex items-center gap-gutter">
-            <Link to="/" className="font-bold text-display-lg-mobile md:text-title-lg text-primary tracking-tight">
+            <Link to="/" className="font-bold text-display-lg-mobile md:text-display-lg text-primary tracking-tight">
               CafeReserve
             </Link>
             <nav className="hidden md:flex gap-6 ml-8">

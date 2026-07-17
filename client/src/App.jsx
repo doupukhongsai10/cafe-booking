@@ -72,22 +72,8 @@ function App() {
           </RoleProtectedRoute>
         )}
       />
-      <Route
-        path="/cafes"
-        element={(
-          <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
-            <CafeDiscoveryPage />
-          </RoleProtectedRoute>
-        )}
-      />
-      <Route
-        path="/cafes/:id"
-        element={(
-          <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
-            <CafeDetailPage />
-          </RoleProtectedRoute>
-        )}
-      />
+      <Route path="/cafes" element={<CafeDiscoveryPage />} />
+      <Route path="/cafes/:id" element={<CafeDetailPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

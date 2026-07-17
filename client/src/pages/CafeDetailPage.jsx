@@ -132,6 +132,11 @@ function CafeDetailPage() {
   async function handlePlaceHold(e) {
     e.preventDefault();
     setFormError('');
+    if (!isAuthenticated) {
+      toast.error('Please log in to reserve a table.');
+      navigate('/login');
+      return;
+    }
     if (!selectedTable) { setFormError('Please select a table.'); return; }
     if (!bookingDate) { setFormError('Please pick a date.'); return; }
     if (!startTime || !endTime) { setFormError('Please fill in start and end times.'); return; }

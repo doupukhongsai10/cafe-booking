@@ -389,7 +389,7 @@ function LandingPage() {
                   <span className="material-symbols-outlined fill-current text-sm">star</span>
                 </div>
                 <p className="text-on-surface text-sm italic mb-8 leading-relaxed">
-                  "Aura Reserve changed how I spend my weekends. I used to wander around hoping for a seat; now I have a guaranteed spot at the best aesthetic cafes in the city."
+                  "CafeReserve changed how I spend my weekends. I used to wander around hoping for a seat; now I have a guaranteed spot at the best aesthetic cafes in the city."
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center font-bold text-primary text-sm">
@@ -435,7 +435,7 @@ function LandingPage() {
                   <span className="material-symbols-outlined fill-current text-sm">star</span>
                 </div>
                 <p className="text-on-surface text-sm italic mb-8 leading-relaxed">
-                  "As a remote worker, finding quiet cafes with good Wi-Fi is crucial. Aura Reserve filters make it so easy to find my office for the day."
+                  "As a remote worker, finding quiet cafes with good Wi-Fi is crucial. CafeReserve filters make it so easy to find my office for the day."
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center font-bold text-tertiary text-sm">
@@ -477,7 +477,7 @@ function LandingPage() {
       {/* Footer */}
       <footer className="bg-surface-container-highest w-full py-8 px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto border-t border-outline-variant mt-auto">
         <div className="mb-4 md:mb-0">
-          <span className="text-lg font-bold text-primary">Aura Reserve</span>
+          <span className="text-lg font-bold text-primary">CafeReserve</span>
         </div>
         <nav className="flex flex-wrap justify-center gap-6 mb-4 md:mb-0">
           <button
@@ -506,7 +506,7 @@ function LandingPage() {
           </button>
         </nav>
         <div>
-          <p className="text-xs text-primary/70">© 2026 Aura Reserve SaaS Marketplace. All rights reserved.</p>
+          <p className="text-xs text-primary/70">© 2026 CafeReserve SaaS Marketplace. All rights reserved.</p>
         </div>
       </footer>
     </div>

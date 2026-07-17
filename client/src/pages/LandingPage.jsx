@@ -49,7 +49,7 @@ function LandingPage() {
         <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
           <div className="flex items-center gap-gutter">
             <Link to="/" className="font-bold text-display-lg-mobile md:text-title-lg text-primary tracking-tight">
-              Aura Reserve
+              <h1>CafeReserve</h1>
             </Link>
             <nav className="hidden md:flex gap-6 ml-8">
               <button

@@ -101,12 +101,12 @@ function HomePage() {
   return (
     <main className="home-page">
       <header className="home-header">
-        <span className="brand">Aura Reserve</span>
+        <span className="brand">CafeReserve</span>
         <button className="button-secondary" type="button" onClick={handleLogout}>Sign out</button>
       </header>
 
       <section className="home-card" style={{ marginTop: '8vh' }}>
-        <p className="eyebrow">WELCOME TO AURA RESERVE</p>
+        <p className="eyebrow">WELCOME TO CAFERESERVE</p>
         <h1 style={{ color: 'var(--text-heading)', fontWeight: '600' }}>Hello, {user?.name}.</h1>
 
         {user?.role === 'SUPER_ADMIN' && (
@@ -319,7 +319,7 @@ function HomePage() {
                     Write a Review
                   </h3>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
-                    Share your experience with Aura Reserve and other diners!
+                    Share your experience with CafeReserve and other diners!
                   </p>
 
                   <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

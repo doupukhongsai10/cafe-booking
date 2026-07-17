@@ -102,7 +102,7 @@ function CafeOnboardingPage() {
   return (
     <main className="home-page">
       <header className="home-header">
-        <span className="brand" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>Aura Reserve</span>
+        <span className="brand" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>CafeReserve</span>
         <button className="button-secondary" type="button" onClick={() => logout()}>Sign out</button>
       </header>
 

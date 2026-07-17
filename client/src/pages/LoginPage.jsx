@@ -40,7 +40,7 @@ function LoginPage() {
     <AuthLayout
       title="Welcome back"
       description="Sign in to manage your reservations and discover your next café."
-      footerText="New to Aura Reserve?"
+      footerText="New to CafeReserve?"
       footerLink="/register"
       footerLinkLabel="Create an account"
     >

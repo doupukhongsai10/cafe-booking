@@ -79,7 +79,7 @@ function SuperAdminDashboard() {
     <main className="home-page">
       <header className="home-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span className="brand" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>Aura Reserve</span>
+          <span className="brand" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>CafeReserve</span>
           <span style={{ fontSize: '14px', background: 'var(--border-default)', padding: '4px 12px', borderRadius: 'var(--radius-full)', color: 'var(--text-heading)', fontWeight: '600' }}>
             SUPER ADMIN PANEL
           </span>

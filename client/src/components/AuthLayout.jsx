@@ -4,7 +4,7 @@ function AuthLayout({ title, description, children, footerText, footerLink, foot
   return (
     <main className="auth-page">
       <section className="auth-intro" aria-labelledby="brand-heading">
-        <Link className="brand" to="/">Aura Reserve</Link>
+        <Link className="brand" to="/">CafeReserve</Link>
         <div>
           <p className="eyebrow">LOCAL CAFÉ BOOKINGS</p>
           <h1 id="brand-heading">Make time for your favourite places.</h1>

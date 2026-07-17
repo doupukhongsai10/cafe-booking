@@ -13,7 +13,7 @@ function LoginPage() {
   const navigate = useNavigate();
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   function handleChange(event) {
@@ -28,7 +28,7 @@ function LoginPage() {
 
     try {
       await login(form);
-      navigate('/');
+      navigate('/home');
     } catch (requestError) {
       setError(requestError.response?.data?.error ?? 'Unable to sign in. Please try again.');
     } finally {

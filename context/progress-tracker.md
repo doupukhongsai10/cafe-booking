@@ -38,6 +38,7 @@ Update this file after every meaningful implementation change.
 - [x] Unit 17/18: Reviews System (ratings and comments database schema, migration, backend review endpoints, customer write review modals, and café profile reviews list integrated)
 - [x] Unit 19/22: Staff Management (owners registering staff accounts, staff dashboard role security gating, and read-only reservation views complete)
 - [x] Unit 20/21: Socket.io Real-time Updates (Socket.io server bootstrapping, room-joining mapping, booking holds/expiries/confirmations real-time emitters, custom react useSocket client hook, and live availability list tracking on CafeDetailPage integrated)
+- [x] Public landing page (designed according to mockup spec in context/DESIGN.md, styled with project-integrated TailwindCSS, and mapped to root route '/')
 
 ## In Progress
 

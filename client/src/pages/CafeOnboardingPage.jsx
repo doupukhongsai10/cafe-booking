@@ -90,7 +90,7 @@ function CafeOnboardingPage() {
       });
 
       await onboardCafe(formData, token);
-      navigate('/');
+      navigate('/home');
     } catch (err) {
       const msg = err.response?.data?.error || err.message || 'Failed to submit café onboarding details.';
       setError(msg);

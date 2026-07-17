@@ -13,7 +13,7 @@ function RegisterPage() {
   const navigate = useNavigate();
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   function handleChange(event) {
@@ -28,7 +28,7 @@ function RegisterPage() {
 
     try {
       await register(form);
-      navigate('/');
+      navigate('/home');
     } catch (requestError) {
       setError(requestError.response?.data?.error ?? 'Unable to create your account. Please try again.');
     } finally {

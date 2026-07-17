@@ -8,6 +8,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import CafeDashboardPage from './pages/CafeDashboardPage';
 import CafeDiscoveryPage from './pages/CafeDiscoveryPage';
 import CafeDetailPage from './pages/CafeDetailPage';
+import LandingPage from './pages/LandingPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -27,7 +28,7 @@ function RoleProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return children;
@@ -38,8 +39,9 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route
-        path="/"
+        path="/home"
         element={(
           <ProtectedRoute>
             <HomePage />

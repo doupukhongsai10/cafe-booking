@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../store/AuthContext';
 
-const INITIAL_FORM = { name: '', email: '', password: '' };
+const INITIAL_FORM = { name: '', email: '', password: '', role: 'CUSTOMER' };
 
 function RegisterPage() {
   const [form, setForm] = useState(INITIAL_FORM);
@@ -52,6 +52,13 @@ function RegisterPage() {
         <input id="email" name="email" type="email" autoComplete="email" value={form.email} onChange={handleChange} required />
         <label htmlFor="password">Password</label>
         <input id="password" name="password" type="password" autoComplete="new-password" minLength="8" value={form.password} onChange={handleChange} required />
+        
+        <label htmlFor="role">I want to register as a</label>
+        <select id="role" name="role" value={form.role} onChange={handleChange} required>
+          <option value="CUSTOMER">Customer (Browse & Book Cafés)</option>
+          <option value="CAFE_ADMIN">Café Owner (Register & Manage Café Workspace)</option>
+        </select>
+
         <button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Creating account…' : 'Create account'}</button>
       </form>
     </AuthLayout>

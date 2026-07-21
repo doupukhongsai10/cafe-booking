@@ -64,3 +64,8 @@ Update this file after every meaningful implementation change.
 - The build plan contains 22 specific units mapped out in order.
 - Unit 1 verified: Neon Postgres connected; migration `20260714111328_init_users_and_token_blacklist` applied successfully.
 - Unit 2 corrected: public registration is limited to customers and café admins; validation, protected-route errors, and persisted token invalidation are verified locally.
+- Removed the home icon from the header logo on the Landing Page while preserving it on other pages.
+- Redesigned RegisterPage layout and background to match the split-screen design and creamy background of LoginPage.
+- Fixed Cafe Dashboard Operating Hours bugs: resolved checkbox click styling conflicts in CSS, fixed ReferenceError in handleTabChange, and synchronized the state after successful updates.
+- Redesigned Cafe Owner Dashboard (CafeDashboardPage.jsx) to match the dark-themed sidebar layout of the mockup, including interactive Overview metrics (today's bookings, capacity percentage, reviews average), dynamic horizontal timeline preview grid, and recent activity log.
+

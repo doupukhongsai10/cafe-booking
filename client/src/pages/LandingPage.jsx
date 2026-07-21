@@ -87,7 +87,6 @@ function LandingPage() {
         <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
           <div className="flex items-center gap-gutter">
             <Link to="/" className="flex items-center gap-2 font-black text-4xl md:text-5xl text-primary tracking-tight hover:opacity-85">
-              <span className="material-symbols-outlined text-3xl md:text-4xl leading-none">home</span>
               <span>CafeReserve</span>
             </Link>
             <nav className="hidden md:flex gap-6 ml-8">
@@ -269,7 +268,10 @@ function LandingPage() {
                   <div className="flex justify-between items-center border-t border-outline-variant/30 pt-4">
                     <span className="text-lg font-bold text-primary">Rs.40</span>
                     <button
-                      onClick={() => navigate(cafes.length > 0 ? `/cafes/${cafes[0].id}` : '/cafes')}
+                      onClick={() => {
+                        const target = cafes.find(c => c.name.trim().toLowerCase() === 'the brunch collection');
+                        navigate(target ? `/cafes/${target.id}` : '/cafes');
+                      }}
                       className="text-secondary font-semibold hover:underline flex items-center gap-1 text-sm"
                     >
                       View Details <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -296,7 +298,10 @@ function LandingPage() {
                   <div className="flex justify-between items-center border-t border-outline-variant/30 pt-4">
                     <span className="text-lg font-bold text-primary">Rs.30</span>
                     <button
-                      onClick={() => navigate(cafes.length > 0 ? `/cafes/${cafes[0].id}` : '/cafes')}
+                      onClick={() => {
+                        const target = cafes.find(c => c.name.trim().toLowerCase() === 'the brunch collection');
+                        navigate(target ? `/cafes/${target.id}` : '/cafes');
+                      }}
                       className="text-secondary font-semibold hover:underline flex items-center gap-1 text-sm"
                     >
                       View Details <span className="material-symbols-outlined text-sm">arrow_forward</span>

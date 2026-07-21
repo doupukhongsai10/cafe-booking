@@ -299,7 +299,7 @@ function LandingPage() {
                     <span className="text-lg font-bold text-primary">Rs.30</span>
                     <button
                       onClick={() => {
-                        const target = cafes.find(c => c.name.trim().toLowerCase() === 'the brunch collection');
+                        const target = cafes.find(c => c.name.trim().toLowerCase() === 'salted caramel cloud');
                         navigate(target ? `/cafes/${target.id}` : '/cafes');
                       }}
                       className="text-secondary font-semibold hover:underline flex items-center gap-1 text-sm"

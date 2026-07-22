@@ -27,7 +27,6 @@ export async function onboardCafe(formData, token) {
   const response = await cafeClient.post('/cafes', formData, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
     },
   });
   return response.data.data.cafe;
@@ -56,7 +55,6 @@ export async function updateCafeProfile(id, formData, token) {
   const response = await cafeClient.patch(`/cafes/${id}`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
     },
   });
   return response.data.data.cafe;

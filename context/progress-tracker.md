@@ -68,4 +68,5 @@ Update this file after every meaningful implementation change.
 - Redesigned RegisterPage layout and background to match the split-screen design and creamy background of LoginPage.
 - Fixed Cafe Dashboard Operating Hours bugs: resolved checkbox click styling conflicts in CSS, fixed ReferenceError in handleTabChange, and synchronized the state after successful updates.
 - Redesigned Cafe Owner Dashboard (CafeDashboardPage.jsx) to match the dark-themed sidebar layout of the mockup, including interactive Overview metrics (today's bookings, capacity percentage, reviews average), dynamic horizontal timeline preview grid, and recent activity log.
+- Fixed Café Profile Settings saving issues: removed manual 'Content-Type' header from Axios FormData calls (which was stripping out the boundary parameters and causing parsing to fail on the backend), and added a useEffect hook in the dashboard to synchronize the profileForm input states with the returned database cafe response.
 

@@ -151,6 +151,20 @@ function CafeDashboardPage() {
     fetchDashboardData();
   }, [token]);
 
+  useEffect(() => {
+    if (cafe) {
+      setProfileForm({
+        name: cafe.name || '',
+        description: cafe.description || '',
+        location: cafe.location || '',
+        city: cafe.city || '',
+        area: cafe.area || '',
+        latitude: String(cafe.latitude || '40.7128'),
+        longitude: String(cafe.longitude || '-74.0060')
+      });
+    }
+  }, [cafe]);
+
   // Tab switching clears messages
   function handleTabChange(tab) {
     setActiveTab(tab);
@@ -603,12 +617,17 @@ function CafeDashboardPage() {
                     <div className="min-w-[600px] relative">
                       
                       {/* Timeline Header */}
-                      <div className="flex text-[10px] font-bold tracking-wider text-white/50 mb-6 ml-[80px] uppercase">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                          <div key={i} className="flex-1 text-center relative">
-                            <span className="absolute -translate-x-1/2">{i + 8}:00 AM</span>
-                          </div>
-                        ))}
+                      <div className="flex text-[10px] font-bold tracking-wider text-white/50 mb-6 ml-[80px] uppercase h-4">
+                        {Array.from({ length: 8 }).map((_, i) => {
+                          const hour = i + 8;
+                          const displayHour = hour > 12 ? hour - 12 : hour;
+                          const ampm = hour >= 12 ? 'PM' : 'AM';
+                          return (
+                            <div key={i} className="flex-1 text-center relative">
+                              <span className="absolute -translate-x-1/2">{displayHour}:00 {ampm}</span>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       {/* Timeline Rows */}
@@ -649,15 +668,15 @@ function CafeDashboardPage() {
                                     return (
                                       <div
                                         key={b.id}
-                                        className="absolute h-full bg-[#3c2a21]/80 hover:bg-[#3c2a21] border border-white/20 rounded-lg p-2 flex items-center gap-2 overflow-hidden shadow-sm transition-colors cursor-pointer"
-                                        style={{ left: `${left}%`, width: `${width}%` }}
+                                        className="absolute h-full bg-[#3c2a21]/80 hover:bg-[#3c2a21] border border-white/20 rounded-lg p-1.5 flex items-center gap-1.5 overflow-hidden shadow-sm transition-colors cursor-pointer"
+                                        style={{ left: `${left}%`, width: `${width}%`, minWidth: '64px' }}
                                         onClick={() => handleTabChange('reservations')}
                                         title={`${b.customer?.name} (Party of ${b.partySize})`}
                                       >
-                                        <div className="w-5 h-5 rounded-full bg-white/15 text-[10px] font-bold flex items-center justify-center text-white">
+                                        <div className="w-5 h-5 rounded-full bg-white/15 text-[10px] font-bold flex items-center justify-center text-white shrink-0">
                                           {getInitials(b.customer?.name)}
                                         </div>
-                                        <span className="text-[10px] font-semibold text-white truncate">
+                                        <span className="text-[10px] font-semibold text-white truncate shrink-1">
                                           {b.customer?.name} ({b.partySize})
                                         </span>
                                       </div>
